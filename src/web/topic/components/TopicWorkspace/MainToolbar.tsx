@@ -168,7 +168,8 @@ const ShowHideMenu = ({ anchorEl, setAnchorEl }: ShowHideMenuProps) => {
         <ListItemIcon>
           <Looks6 />
         </ListItemIcon>
-        <ListItemText primary="Show scores" />
+        {/* "always" to distinguish from "on hover" - ideally we probably use "always"/"on hover"/"never" options to remove ambiguity */}
+        <ListItemText primary="Always show scores" />
         <Switch
           checked={showScores}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation
@@ -180,7 +181,8 @@ const ShowHideMenu = ({ anchorEl, setAnchorEl }: ShowHideMenuProps) => {
         <ListItemIcon>
           <ThumbsUpDown />
         </ListItemIcon>
-        <ListItemText primary="Show content indicators" />
+        {/* "always" to distinguish from "on hover" - ideally we probably use "always"/"on hover"/"never" options to remove ambiguity */}
+        <ListItemText primary="Always show content indicators" />
         <Switch
           checked={showContentIndicators}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation

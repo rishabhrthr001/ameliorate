@@ -2,6 +2,11 @@ import { useContext } from "react";
 
 import { Indicator, IndicatorProps } from "@/web/topic/components/Indicator/Base/Indicator";
 import { WorkspaceContext } from "@/web/topic/components/TopicWorkspace/WorkspaceContext";
+import {
+  interactableClass,
+  visibleOnEdgeHoverSelectedClasses,
+  visibleOnNodeHoverSelectedClasses,
+} from "@/web/topic/utils/styleUtils";
 import { useShowContentIndicators } from "@/web/view/userConfigStore";
 
 export const ContentIndicator = ({
@@ -14,8 +19,9 @@ export const ContentIndicator = ({
   const workspaceContext = useContext(WorkspaceContext);
   const showContentIndicators = useShowContentIndicators();
 
-  // Nice to always show in details view so there's some way for new users to be exposed to them.
-  const showIndicator = workspaceContext === "details" || showContentIndicators;
+  // Always show in details and summary because selection completely changes these views and isn't
+  // convenient for quickly checking if there might be more content.
+  const alwaysShow = ["details", "summary"].includes(workspaceContext) || showContentIndicators;
 
   return (
     <Indicator
@@ -24,7 +30,12 @@ export const ContentIndicator = ({
       onClick={onClick}
       bgColor={bgColor}
       filled={filled}
-      className={showIndicator ? "" : "hidden"}
+      className={
+        interactableClass +
+        (alwaysShow
+          ? ""
+          : ` hidden ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`)
+      }
     />
   );
 };

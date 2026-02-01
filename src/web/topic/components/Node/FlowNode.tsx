@@ -117,6 +117,8 @@ export const FlowNode = (flowNode: NodeProps) => {
     <>
       <Global styles={nodeStyles(node, spotlight)} />
 
+      {/* TODO: this should only exist between the node and toolbar, not all surrounding the node */}
+      {/* TODO: hovering the bridge shouldn't have a pointer cursor if clicking won't select the node */}
       <HoverBridgeDiv />
 
       {/* using this motion.div separately from EditableNode's specifically for animating node handles with the node */}
@@ -162,7 +164,7 @@ export const FlowNode = (flowNode: NodeProps) => {
           addableRelations={addableRelations}
           title="Add node"
           openDirection={addButtonPosition === Position.Top ? "top" : "bottom"}
-          className={`invisible absolute ${visibleOnNodeHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
+          className={`absolute hidden ${visibleOnNodeHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
         />
       )}
     </>

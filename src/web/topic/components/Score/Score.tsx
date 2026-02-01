@@ -16,6 +16,11 @@ import { useFlowZoom } from "@/web/topic/hooks/flowHooks";
 import { useOnPlayground } from "@/web/topic/topicStore/store";
 import { hotkeys } from "@/web/topic/utils/hotkeys";
 import { userCanEditScores } from "@/web/topic/utils/score";
+import {
+  interactableClass,
+  visibleOnEdgeHoverSelectedClasses,
+  visibleOnNodeHoverSelectedClasses,
+} from "@/web/topic/utils/styleUtils";
 import { useReadonlyMode } from "@/web/view/actionConfigStore";
 import { useAggregationMode, usePerspectives } from "@/web/view/perspectiveStore";
 import { useQuickScoring, useShowScores } from "@/web/view/userConfigStore";
@@ -65,24 +70,29 @@ export const Score = ({ graphPartId }: ScoreProps) => {
 
   const isComparing = Object.keys(userScores).length > 1;
 
+  const handleScoreSelected = () => {
+    setSelected(false);
+    setHovering(false);
+  };
+
   const hoverCircle = isComparing ? (
     <ScoreCompare userScores={userScores} />
   ) : canEdit ? (
-    <ScoreSelect
-      username={myUsername}
-      graphPartId={graphPartId}
-      onSelect={() => {
-        setSelected(false);
-        setHovering(false);
-      }}
-    />
+    <ScoreSelect username={myUsername} graphPartId={graphPartId} onSelect={handleScoreSelected} />
   ) : undefined;
   const isInteractive = hoverCircle !== undefined;
 
   // Nice to show scores in details view so there's some way for new users to be exposed to them.
   // Always show score on table because the main purpose of the table is to compare scores.
   const showScore = workspaceContext === "table" || workspaceContext === "details" || showScores;
-  const showScoreClasses = showScore ? "" : " hidden";
+
+  // TODO: it's really awkward when scores are hidden, we hover the node, select a score, and the
+  // score immediately disappears before we can see that our score was actually selected.
+  // How can we make this not awkward...? Potentially we could `setTimeout` after scoring so that
+  // it shows for a second or two and then fades?
+  const showScoreClasses = showScore
+    ? ""
+    : ` hidden ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`;
 
   if (!isInteractive) {
     return (
@@ -116,7 +126,7 @@ export const Score = ({ graphPartId }: ScoreProps) => {
           onMouseLeave={() => clearTimeout(hoverDelayHandler)}
           userScores={userScores}
           aggregationMode={aggregationMode}
-          className={showScoreClasses}
+          className={`${interactableClass} ${showScoreClasses}`}
         />
       </Tooltip>
 

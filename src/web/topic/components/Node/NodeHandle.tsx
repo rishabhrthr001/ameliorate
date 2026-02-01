@@ -40,7 +40,7 @@ const NodeHandleBase = ({ id, position }: Props) => {
         // z-index to show in front of EditableNode, which is otherwise in the same stacking context (since it's set to relative positioning now)
         "size-2.5 z-10" +
         // rely on `visibility` rather than `display` so that invisible handles can still render for react-flow's connection drawing
-        " invisible" +
+        " hidden" +
         ` ${showIfConnectingClassName}` +
         ` ${showOnHoverSelectClassName}`
       }

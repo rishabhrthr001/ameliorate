@@ -31,6 +31,12 @@ interface UserConfigStoreState {
    */
   quickScoring: boolean;
 
+  /**
+   * Defaulted to false (with content indicators) under the assumption that they'll show on hover or
+   * select.
+   *
+   * TODO?: probably should change these from bools to enums ("show: always" vs "show: on hover or select")
+   */
   showScores: boolean;
   showContentIndicators: boolean;
   showViewIndicators: boolean;
@@ -45,8 +51,8 @@ const initialState: UserConfigStoreState = {
   expandAddNodeButtons: false,
   quickScoring: false,
 
-  showScores: true,
-  showContentIndicators: true,
+  showScores: false,
+  showContentIndicators: false,
   showViewIndicators: false,
   indicateWhenNodeForcedToShow: false,
 };
