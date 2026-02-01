@@ -162,26 +162,24 @@ export const ScoreEdge = ({ inReactFlow, ...flowEdge }: EdgeProps & Props) => {
         (flowEdge.selected ? " selected" : "")
       }
     >
-      <div className="flex">
-        <Typography
-          variant="body1"
-          margin="0"
-          contentEditable={userCanEditTopicData && unrestrictedEditing}
-          suppressContentEditableWarning // https://stackoverflow.com/a/49639256/8409296
-          onBlur={(event) => {
-            const text = event.target.textContent.trim();
-            if (text && text !== lowerCase(edge.label) && text !== edge.data.customLabel)
-              setCustomEdgeLabel(edge, text);
-          }}
-          // without nopan, clicking on the span won't let you edit text
-          className={userCanEditTopicData && unrestrictedEditing ? "nopan" : ""}
-        >
-          {labelText}
-        </Typography>
-        {/* only use margin when indicators are showing */}
-        <CommonIndicatorGroup graphPart={edge} className="mx-0 *:ml-0.5" />
-      </div>
-      <div className="absolute bottom-0 flex translate-y-4">
+      <Typography
+        variant="body1"
+        margin="0"
+        contentEditable={userCanEditTopicData && unrestrictedEditing}
+        suppressContentEditableWarning // https://stackoverflow.com/a/49639256/8409296
+        onBlur={(event) => {
+          const text = event.target.textContent.trim();
+          if (text && text !== lowerCase(edge.label) && text !== edge.data.customLabel)
+            setCustomEdgeLabel(edge, text);
+        }}
+        // without nopan, clicking on the span won't let you edit text
+        className={userCanEditTopicData && unrestrictedEditing ? "nopan" : ""}
+      >
+        {labelText}
+      </Typography>
+      {/* only use margin when indicators are showing */}
+      <CommonIndicatorGroup graphPart={edge} className="absolute right-0 translate-x-5" />
+      <div className="absolute bottom-0 flex translate-y-5">
         <StatusIndicatorGroup graphPartId={edge.id} bgColor="white" notes={edge.data.notes} />
         <ContentIndicatorGroup
           graphPartId={edge.id}

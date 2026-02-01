@@ -68,7 +68,10 @@ export const PieChart = ({
           segmentsStyle={(dataIndex) => ({
             transform: type === "regular" && hovered === dataIndex ? "scale(1.1)" : "",
             transformOrigin: "center",
-            transition: theme.transitions.create("all", {
+            // Use a nice animation for when hovering segment causes it to scale larger/smaller
+            // Don't transition "all" because that causes the pie to linger when parent visibility
+            // changes on to off (e.g. when hovering away from FocusNodeAttachment)
+            transition: theme.transitions.create(["transform"], {
               duration: theme.transitions.duration.shortest,
             }),
             pointerEvents: interactive ? "auto" : "none",

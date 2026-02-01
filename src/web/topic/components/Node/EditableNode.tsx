@@ -19,13 +19,13 @@ import {
   secondarySpotlightColor,
 } from "@/web/topic/components/Diagram/Diagram.styles";
 import { CommonIndicatorGroup } from "@/web/topic/components/Indicator/Base/CommonIndicatorGroup";
+import { ContentIndicatorGroup } from "@/web/topic/components/Indicator/Base/ContentIndicatorGroup";
+import { StatusIndicatorGroup } from "@/web/topic/components/Indicator/Base/StatusIndicatorGroup";
 import {
   BottomDiv,
-  LeftCornerStatusIndicators,
   MiddleDiv,
   NodeTypeDiv,
   NodeTypeSpan,
-  RightCornerContentIndicators,
   TopDiv,
   nodeWidthRem,
 } from "@/web/topic/components/Node/EditableNode.styles";
@@ -209,17 +209,18 @@ const EditableNodeBase = ({ node, className = "", onClick }: Props) => {
           {node.type !== "rootClaim" && ( // root claim indicators don't seem very helpful
             <>
               {/* TODO?: how to make corner indicators not look bad in the table? they're cut off. fit indicators into node footer? */}
-              <LeftCornerStatusIndicators
+              <StatusIndicatorGroup
                 graphPartId={node.id}
                 bgColor={nodeStyles.backgroundColor as string}
                 notes={node.data.notes}
-                className={interactableClass}
+                // translate amounts are those that just look decent hanging over the edge of the node
+                className="absolute bottom-0 left-0 -translate-x-2.5 translate-y-2/3"
               />
-              <RightCornerContentIndicators
+              <ContentIndicatorGroup
                 graphPartId={node.id}
                 graphPartType="node"
                 bgColor={nodeStyles.backgroundColor as string}
-                className={interactableClass}
+                className="absolute right-0 bottom-0 translate-x-2.5 translate-y-2/3"
               />
             </>
           )}
