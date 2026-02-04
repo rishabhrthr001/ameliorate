@@ -48,15 +48,15 @@ import {
 import { createEmotionCache } from "@mui/material-nextjs/v14-pagesRouter";
 import Color from "colorjs.io";
 
-import { type FlowNodeType } from "@/web/topic/utils/node";
+import { type NodeType } from "@/common/node";
 
 // adding colors to theme documented at https://mui.com/material-ui/customization/palette/#adding-new-colors
 
 declare module "@mui/material/styles" {
   // bit awkward but don't think it's possible to create keys for each NodeType in an interface without creating this intermediate type
   // thanks https://stackoverflow.com/a/60378992
-  type NodeTypePalettes = Record<FlowNodeType, PaletteColor>;
-  type NodeTypePaletteOptions = Record<FlowNodeType, PaletteColorOptions>;
+  type NodeTypePalettes = Record<NodeType, PaletteColor>;
+  type NodeTypePaletteOptions = Record<NodeType, PaletteColorOptions>;
 
   interface Palette extends NodeTypePalettes {
     neutral: PaletteColor;
@@ -95,7 +95,7 @@ declare module "@mui/material/styles" {
 }
 
 declare module "@mui/material" {
-  type NodeTypeColors = Record<FlowNodeType, true>;
+  type NodeTypeColors = Record<NodeType, true>;
 
   interface ButtonPropsColorOverrides extends NodeTypeColors {
     neutral: true;

@@ -1,12 +1,5 @@
 import { Position } from "@xyflow/react";
-import ELK, {
-  type ElkEdgeSection,
-  type ElkExtendedEdge,
-  type ElkLabel,
-  type ElkNode,
-  type ElkPort,
-  type LayoutOptions,
-} from "elkjs";
+import ELK, { type ElkExtendedEdge, type ElkNode, type ElkPort, type LayoutOptions } from "elkjs";
 
 import { throwError } from "@/common/errorHandling";
 import { type NodeType, compareNodesByType, isEffect } from "@/common/node";
@@ -18,7 +11,7 @@ import {
   targetNode as targetNodeOfEdge,
 } from "@/web/topic/utils/edge";
 import { EffectType, getEffectType } from "@/web/topic/utils/effect";
-import { type Edge, type Node } from "@/web/topic/utils/graph";
+import { type Edge, EdgeDirection, type Node } from "@/web/topic/utils/graph";
 
 export type Orientation = "DOWN" | "UP" | "RIGHT" | "LEFT";
 export const orientation: Orientation = "UP" as Orientation; // not constant to allow potential other orientations in the future, and keeping code that currently exists for handling "LEFT" orientation
@@ -160,15 +153,6 @@ const calculateNodeHeight = (label: string) => {
   return nodeHeightPx + scalePxViaDefaultFontSize(additionalHeightPx);
 };
 
-const flipElkSection = (elkSection: ElkEdgeSection): ElkEdgeSection => {
-  return {
-    ...elkSection,
-    startPoint: elkSection.endPoint,
-    endPoint: elkSection.startPoint,
-    bendPoints: elkSection.bendPoints?.toReversed(),
-  };
-};
-
 /**
  * Centers the layouted graph around the origin (0, 0) by offsetting all positions.
  * This helps minimize viewport movement when views change and nodes are hidden/shown,
@@ -200,28 +184,24 @@ const centerGraphAroundOriginZeroZero = (
   // Offset all edge section points and labels
   const centeredEdges: LayoutedEdge[] = layoutedEdges.map((edge) => ({
     ...edge,
-    elkLabel: edge.elkLabel
+    sourcePoint: {
+      x: edge.sourcePoint.x + offsetX,
+      y: edge.sourcePoint.y + offsetY,
+    },
+    targetPoint: {
+      x: edge.targetPoint.x + offsetX,
+      y: edge.targetPoint.y + offsetY,
+    },
+    bendPoints: edge.bendPoints.map((point) => ({
+      x: point.x + offsetX,
+      y: point.y + offsetY,
+    })),
+    labelPosition: edge.labelPosition
       ? {
-          ...edge.elkLabel,
-          x: (edge.elkLabel.x ?? 0) + offsetX,
-          y: (edge.elkLabel.y ?? 0) + offsetY,
+          x: edge.labelPosition.x + offsetX,
+          y: edge.labelPosition.y + offsetY,
         }
       : undefined,
-    elkSections: edge.elkSections.map((section) => ({
-      ...section,
-      startPoint: {
-        x: section.startPoint.x + offsetX,
-        y: section.startPoint.y + offsetY,
-      },
-      endPoint: {
-        x: section.endPoint.x + offsetX,
-        y: section.endPoint.y + offsetY,
-      },
-      bendPoints: section.bendPoints?.map((point) => ({
-        x: point.x + offsetX,
-        y: point.y + offsetY,
-      })),
-    })),
   }));
 
   return { layoutedNodes: centeredNodes, layoutedEdges: centeredEdges };
@@ -234,15 +214,22 @@ export interface LayoutedNode {
   ports: ElkPort[];
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
 export interface LayoutedEdge {
   id: string;
   sourcePortId: string;
   targetPortId: string;
+  sourcePoint: Point;
+  targetPoint: Point;
+  bendPoints: Point[];
   /**
    * Will be undefined when edge labels are excluded from the layout calculation
    */
-  elkLabel?: ElkLabel;
-  elkSections: ElkEdgeSection[];
+  labelPosition?: Point;
 }
 
 export interface LayoutedGraph {
@@ -273,11 +260,15 @@ const parseElkjsOutput = (
     const sourcePortId = edge.sources[0] ?? throwError("edge missing source port in layout", edge);
     const targetPortId = edge.targets[0] ?? throwError("edge missing target port in layout", edge);
 
-    const elkLabel = edge.labels?.[0]; // allowed to be missing if we're excluding labels from the layout calc
     const elkSections = edge.sections;
     if (!elkSections) return throwError("edge missing sections in layout", edge);
     const elkSection = elkSections[0];
     if (!elkSection) return throwError("edge missing section in layout", edge);
+    const bendPoints = elkSection.bendPoints ?? [];
+
+    const { x: labelX, y: labelY } = edge.labels?.[0] ?? {}; // allowed to be missing if we're excluding labels from the layout calc
+    const labelPosition =
+      labelX !== undefined && labelY !== undefined ? { x: labelX, y: labelY } : undefined;
 
     // annoying to actually carry `flipped` up to this point without casting so we're just casting it
     const flippableEdge = edge as unknown as Edge & { flipped: boolean };
@@ -287,11 +278,21 @@ const parseElkjsOutput = (
         id: edge.id,
         sourcePortId: targetPortId,
         targetPortId: sourcePortId,
-        elkLabel,
-        elkSections: [flipElkSection(elkSection)],
+        sourcePoint: elkSection.endPoint,
+        targetPoint: elkSection.startPoint,
+        bendPoints: bendPoints.toReversed(),
+        labelPosition,
       };
     } else {
-      return { id: edge.id, sourcePortId, targetPortId, elkLabel, elkSections };
+      return {
+        id: edge.id,
+        sourcePortId,
+        targetPortId,
+        sourcePoint: elkSection.startPoint,
+        targetPoint: elkSection.endPoint,
+        bendPoints,
+        labelPosition,
+      };
     }
   });
 
@@ -368,6 +369,20 @@ const shouldFlipEdge = (edge: Edge, nodes: Node[], edges: Edge[]) => {
   return isSubproblemEdge || isProblemCausesEdge;
 };
 
+export const buildPortId = (nodeId: string, direction: EdgeDirection) => {
+  // note: node ids are uuids so period as a delimiter should be splittable
+  // "regular" as opposed to a future "flipped" because we likely will eventually add a second port for flipped edges
+  return direction === "source" ? `${nodeId}.regular.source` : `${nodeId}.regular.target`;
+};
+
+export const parsePortId = (portId: string): { nodeId: string; direction: EdgeDirection } => {
+  const [nodeId, _, direction] = portId.split(".");
+  if (nodeId === undefined || (direction !== "source" && direction !== "target")) {
+    return throwError("invalid port id", portId);
+  }
+  return { nodeId, direction };
+};
+
 const buildElkEdgesAndUsedPorts = ({ edges, nodes }: Diagram, avoidEdgeLabelOverlap: boolean) => {
   const usedPortsByNodeId: Record<string, ElkPort[]> = {};
 
@@ -380,7 +395,7 @@ const buildElkEdgesAndUsedPorts = ({ edges, nodes }: Diagram, avoidEdgeLabelOver
     .map((edge) => {
       /* eslint-disable functional/immutable-data -- seems significantly easier to populate used ports via mutation */
       const sourcePort: ElkPort = {
-        id: edge.source + "-regularSource",
+        id: buildPortId(edge.source, "source"),
         layoutOptions: { "elk.port.side": "NORTH" },
       };
       const usedSourcePorts = (usedPortsByNodeId[edge.source] ??= []);
@@ -389,7 +404,7 @@ const buildElkEdgesAndUsedPorts = ({ edges, nodes }: Diagram, avoidEdgeLabelOver
       }
 
       const targetPort: ElkPort = {
-        id: edge.target + "-regularTarget",
+        id: buildPortId(edge.target, "target"),
         layoutOptions: { "elk.port.side": "SOUTH" },
       };
       const usedTargetPorts = (usedPortsByNodeId[edge.target] ??= []);

@@ -2,8 +2,29 @@ import { Position, getBezierPath } from "@xyflow/react";
 
 import { throwError } from "@/common/errorHandling";
 import { scalePxViaDefaultFontSize } from "@/pages/_document.page";
-import { EdgeProps } from "@/web/topic/components/Diagram/Diagram";
+import { EdgeLayoutData } from "@/web/topic/utils/diagram";
 import { labelWidthPx } from "@/web/topic/utils/layout";
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+/**
+ * For the calculation, uses proper handle `Position` values based on which of start/end is above the other.
+ */
+const getSimpleBezierPath = (start: Point, end: Point) => {
+  const [pathDefinition, labelX, labelY] = getBezierPath({
+    sourceX: start.x,
+    sourceY: start.y,
+    sourcePosition: start.y > end.y ? Position.Top : Position.Bottom,
+    targetX: end.x,
+    targetY: end.y,
+    targetPosition: start.y > end.y ? Position.Bottom : Position.Top,
+  });
+
+  return { pathDefinition, labelX, labelY };
+};
 
 /**
  * If `avoidEdgeLabelOverlap` is true and there are edge bendpoints from the ELK layout, use the
@@ -13,57 +34,25 @@ import { labelWidthPx } from "@/web/topic/utils/layout";
  * Tried inserting a control point directly below `startPoint` and above `endPoint`, and that
  * resulted in vertical slopes, but the curve to/from the next bend points became jagged.
  */
-export const getPathDefinitionForEdge = (flowEdge: EdgeProps, avoidEdgeLabelOverlap: boolean) => {
-  const { elkLabel, elkSections } = flowEdge.data;
-  const elkSection = elkSections[0];
-  const bendPoints = elkSection?.bendPoints;
-  const firstBendPoint = bendPoints?.[0];
-  const lastBendPoint = bendPoints?.[bendPoints.length - 1];
-
-  const missingBendPoints =
-    elkSection === undefined ||
-    bendPoints === undefined ||
-    firstBendPoint === undefined ||
-    lastBendPoint === undefined;
-
-  if (!avoidEdgeLabelOverlap || missingBendPoints) {
-    // Draw paths using elk output if possible, because reactflow source/target will be wrong if edge is flipped.
-    // If we laid out the edges, we should have an elk section; we e.g. won't have one for standalone edges.
-    const [start, end] = elkSection
-      ? [elkSection.startPoint, elkSection.endPoint]
-      : [
-          { x: flowEdge.sourceX, y: flowEdge.sourceY },
-          { x: flowEdge.targetX, y: flowEdge.targetY },
-        ];
-
+export const getPathDefinitionForEdge = (
+  edgeLayoutData: EdgeLayoutData,
+  avoidEdgeLabelOverlap: boolean,
+) => {
+  const { sourcePoint, targetPoint, bendPoints, labelPosition } = edgeLayoutData;
+  if (!avoidEdgeLabelOverlap || bendPoints.length === 0) {
     // TODO: probably ideally would draw this path through the ELK label position if that's provided
-    const [pathDefinition, labelX, labelY] = getBezierPath({
-      sourceX: start.x,
-      sourceY: start.y,
-      sourcePosition: start.y > end.y ? Position.Top : Position.Bottom,
-      targetX: end.x,
-      targetY: end.y,
-      targetPosition: start.y > end.y ? Position.Bottom : Position.Top,
-    });
-
-    return { pathDefinition, labelX, labelY };
-  }
-
-  if (elkSections.length > 1) {
-    return throwError("No implementation yet for edge with multiple sections", flowEdge);
+    return getSimpleBezierPath(edgeLayoutData.sourcePoint, edgeLayoutData.targetPoint);
   }
 
   /**
-   * TODO: start/end would ideally use `flowEdge.source`/`.target` because those are calculated
-   * to include the size of the handles, so the path actually points to the edge of the handle
-   * rather than the edge of the node.
+   * Note: source/end points will be off a little because they don't include the size of the handles.
+   * `flowEdge.source`/`.target` do, but they require a little hackery to work with flipped edges, and
+   * they don't have anything to do with ELK's bendpoints.
    *
    * However: the layout's bend points near the start/end might be too high/low and need to shift
    * down/up in order to make the curve smooth when pointing to the node handles.
    */
-  const startPoint = elkSection.startPoint;
-  const endPoint = elkSection.endPoint;
-  const points = [startPoint, ...bendPoints, endPoint];
+  const points = [sourcePoint, ...bendPoints, targetPoint];
 
   // Awkwardly need to filter out duplicates because of a bug in the layout algorithm.
   // Should be able to remove this logic after https://github.com/eclipse/elk/issues/1085.
@@ -75,15 +64,14 @@ export const getPathDefinitionForEdge = (flowEdge: EdgeProps, avoidEdgeLabelOver
   const bendPointsWithoutDuplicates = pointsWithoutDuplicates.slice(1, -1);
 
   const pathDefinition = drawBezierCurvesFromPoints(
-    startPoint,
+    sourcePoint,
     bendPointsWithoutDuplicates,
-    endPoint,
+    targetPoint,
   );
 
-  const { x: labelX, y: labelY } = elkLabel
+  const { x: labelX, y: labelY } = labelPosition
     ? // Note: ELK label position is moved left by half of its width in order to center it.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      { x: elkLabel.x! + 0.5 * scalePxViaDefaultFontSize(labelWidthPx), y: elkLabel.y! }
+      { x: labelPosition.x + 0.5 * scalePxViaDefaultFontSize(labelWidthPx), y: labelPosition.y }
     : getPathMidpoint(pathDefinition);
 
   return { pathDefinition, labelX, labelY };

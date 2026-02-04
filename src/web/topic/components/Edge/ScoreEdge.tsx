@@ -2,10 +2,8 @@ import { Box, Typography } from "@mui/material";
 import { EdgeLabelRenderer } from "@xyflow/react";
 import { lowerCase } from "es-toolkit";
 
-import { RelationName } from "@/common/edge";
 import { useSessionUser } from "@/web/common/hooks";
 import { openContextMenu } from "@/web/common/store/contextMenuActions";
-import { EdgeProps } from "@/web/topic/components/Diagram/Diagram";
 import {
   Spotlight,
   primarySpotlightColor,
@@ -20,9 +18,11 @@ import { nodeWidthPx } from "@/web/topic/components/Node/EditableNode.styles";
 import { setCustomEdgeLabel } from "@/web/topic/diagramStore/actions";
 import { useIsNodeSelected } from "@/web/topic/diagramStore/edgeHooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
+import { EdgeLayoutData } from "@/web/topic/utils/diagram";
 import { Edge } from "@/web/topic/utils/graph";
 import { useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { useAvoidEdgeLabelOverlap } from "@/web/view/currentViewStore/layout";
+import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
 import { setSelected } from "@/web/view/selectedPartStore";
 
 const flowMarkerId = "flowMarker";
@@ -67,53 +67,33 @@ const svgMarkerDef = (inReactFlow: boolean, spotlight: Spotlight) => {
   );
 };
 
-const convertToEdge = (flowEdge: EdgeProps): Edge => {
-  return {
-    id: flowEdge.id,
-    data: flowEdge.data,
-    // react-flow makes this nullable but we'll always pass it
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    label: flowEdge.label! as RelationName,
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
-
-    // janky, not grabbing from flow edge because flow edge converts this to some URL format that idk how to convert;
-    // but this value is currently always constant so it should be fine
-    source: flowEdge.source,
-    target: flowEdge.target,
-    type: "FlowEdge",
-  };
-};
-
 interface Props {
+  edge: Edge;
+  edgeLayoutData: EdgeLayoutData;
   inReactFlow: boolean;
 }
 
 // base for custom edge taken from https://reactflow.dev/docs/examples/edges/edge-with-button/
-export const ScoreEdge = ({ inReactFlow, ...flowEdge }: EdgeProps & Props) => {
+export const ScoreEdge = ({ edge, edgeLayoutData, inReactFlow }: Props) => {
   const { sessionUser } = useSessionUser();
   const userCanEditTopicData = useUserCanEditTopicData(sessionUser?.username);
 
   const unrestrictedEditing = useUnrestrictedEditing();
   const avoidEdgeLabelOverlap = useAvoidEdgeLabelOverlap();
 
-  const edge = convertToEdge(flowEdge);
   const isNodeSelected = useIsNodeSelected(edge.id);
+  const isEdgeSelected = useIsGraphPartSelected(edge.id);
 
-  const spotlight: Spotlight = flowEdge.selected
-    ? "primary"
-    : isNodeSelected
-      ? "secondary"
-      : "normal";
+  const spotlight: Spotlight = isEdgeSelected ? "primary" : isNodeSelected ? "secondary" : "normal";
 
   const { pathDefinition, labelX, labelY } = getPathDefinitionForEdge(
-    flowEdge,
+    edgeLayoutData,
     avoidEdgeLabelOverlap,
   );
 
   const path = (
     <StyledPath
-      id={flowEdge.id}
-      style={flowEdge.style}
+      id={edge.id}
       className={"react-flow__edge-path" + ` spotlight-${spotlight}`}
       d={pathDefinition}
       markerEnd={`url(#${inReactFlow ? flowMarkerId : nonFlowMarkerId}-${spotlight})`}
@@ -159,7 +139,7 @@ export const ScoreEdge = ({ inReactFlow, ...flowEdge }: EdgeProps & Props) => {
         // allow other components to apply conditional css related to this edge, e.g. when it's hovered/selected
         // separate from react-flow__edge because sometimes edges are rendered outside of react-flow (e.g. details pane), and we still want to style these
         " diagram-edge" +
-        (flowEdge.selected ? " selected" : "")
+        (isEdgeSelected ? " selected" : "")
       }
     >
       <Typography

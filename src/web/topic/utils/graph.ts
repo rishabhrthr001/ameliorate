@@ -16,7 +16,6 @@ import {
   nodeTypes,
   reactFlowNodeSchema,
 } from "@/common/node";
-import { type FlowNodeType } from "@/web/topic/utils/node";
 import { GeneralFilter } from "@/web/view/utils/generalFilter";
 
 export interface Graph {
@@ -35,7 +34,7 @@ interface BuildProps {
   customType?: string | null;
   label?: string;
   notes?: string;
-  type: FlowNodeType;
+  type: NodeType;
   arguedDiagramPartId?: string;
 }
 export const buildNode = ({

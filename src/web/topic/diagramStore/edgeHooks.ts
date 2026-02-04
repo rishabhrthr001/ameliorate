@@ -5,6 +5,18 @@ import { nodes } from "@/web/topic/utils/edge";
 import { Node, findEdgeOrThrow } from "@/web/topic/utils/graph";
 import { useIsAnyGraphPartSelected } from "@/web/view/selectedPartStore";
 
+export const useEdge = (edgeId: string | null) => {
+  return useDiagramStore((state) => {
+    if (!edgeId) return null;
+
+    try {
+      return findEdgeOrThrow(edgeId, state.edges);
+    } catch {
+      return null;
+    }
+  });
+};
+
 export const useEdgeNodes = (edgeId: string): [Node, Node] | [] => {
   return useDiagramStore((state) => {
     try {

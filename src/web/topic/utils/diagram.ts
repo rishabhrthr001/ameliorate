@@ -1,28 +1,16 @@
-import { type Edge as ReactFlowEdge } from "@xyflow/react";
-
 import { type Edge, type Node } from "@/web/topic/utils/graph";
-import { type LayoutedEdge, type LayoutedNode } from "@/web/topic/utils/layout";
+import { LayoutedEdge } from "@/web/topic/utils/layout";
 
 export interface Diagram {
   nodes: Node[];
   edges: Edge[];
 }
 
-export interface PositionedNode extends Node {
-  data: Node["data"] & { ports: LayoutedNode["ports"] };
-  position: {
-    x: number;
-    y: number;
-  };
-}
-
-export interface PositionedEdge
-  extends Edge,
-    Required<Pick<ReactFlowEdge, "sourceHandle" | "targetHandle">> {
-  data: Edge["data"] & Omit<LayoutedEdge, "id" | "sourcePortId" | "targetPortId">; // edge already has id directly on it
-}
-
-export interface PositionedDiagram extends Diagram {
-  nodes: PositionedNode[];
-  edges: PositionedEdge[];
-}
+/**
+ * Used for rendering paths and labels. If we have ELK layout data, we should use that. Otherwise,
+ * e.g. for StandaloneEdge outside of the diagram, we can set `handlePositions`.
+ */
+export type EdgeLayoutData = Pick<
+  LayoutedEdge,
+  "sourcePoint" | "targetPoint" | "bendPoints" | "labelPosition"
+>;

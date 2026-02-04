@@ -1,11 +1,10 @@
 import { Global } from "@emotion/react";
 import { Position } from "@xyflow/react";
 import { motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isEffect, solutionSpecificNodeTypes } from "@/common/node";
 import { useSessionUser } from "@/web/common/hooks";
-import { NodeProps } from "@/web/topic/components/Diagram/Diagram";
 import { Spotlight } from "@/web/topic/components/Diagram/Diagram.styles";
 import { AddNodeButtonGroup } from "@/web/topic/components/Node/AddNodeButtonGroup";
 import {
@@ -15,31 +14,28 @@ import {
 } from "@/web/topic/components/Node/FlowNode.styles";
 import { FocusNodeAttachment } from "@/web/topic/components/Node/FocusNodeAttachment";
 import { NodeHandle } from "@/web/topic/components/Node/NodeHandle";
-import { useIsEdgeSelected, useIsNeighborSelected } from "@/web/topic/diagramStore/nodeHooks";
+import {
+  useIsEdgeSelected,
+  useIsNeighborSelected,
+  useNode,
+} from "@/web/topic/diagramStore/nodeHooks";
 import { useEffectType } from "@/web/topic/diagramStore/nodeTypeHooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { addableRelationsFrom } from "@/web/topic/utils/edge";
-import { Node } from "@/web/topic/utils/graph";
-import { opposite, orientation, positions } from "@/web/topic/utils/layout";
-import { FlowNodeType } from "@/web/topic/utils/node";
+import { FlowNodeProps } from "@/web/topic/utils/flowUtils";
+import { buildPortId, opposite, orientation, positions } from "@/web/topic/utils/layout";
 import { interactableClass, visibleOnNodeHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { getFlashlightMode, useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { showNodeAndNeighbors } from "@/web/view/currentViewStore/filter";
 import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
 
-const convertToNode = (flowNode: NodeProps): Node => {
-  return {
-    id: flowNode.id,
-    data: flowNode.data,
-    type: flowNode.type as FlowNodeType, // we always pass a NodeType from the diagram, but I'm not sure how to override react-flow's type to tell it that
-  };
-};
-
-export const FlowNode = (flowNode: NodeProps) => {
+export const FlowNode = (flowNode: FlowNodeProps) => {
   const [animated, setAnimated] = useState(false);
 
   const { sessionUser } = useSessionUser();
   const userCanEditTopicData = useUserCanEditTopicData(sessionUser?.username);
+
+  const node = useNode(flowNode.id);
   const isSelected = useIsGraphPartSelected(flowNode.id);
   const isNeighborSelected = useIsNeighborSelected(flowNode.id);
   const isEdgeSelected = useIsEdgeSelected(flowNode.id);
@@ -47,21 +43,19 @@ export const FlowNode = (flowNode: NodeProps) => {
   const unrestrictedEditing = useUnrestrictedEditing();
   const effectType = useEffectType(flowNode.id);
 
-  const node = useMemo(() => {
-    return convertToNode(flowNode);
-  }, [flowNode]);
+  useEffect(() => {
+    // hack to avoid animation on first render; for some reason nodes were animating from position 0
+    // to their initial position
+    setAnimated(true);
+  }, []);
+
+  if (!node) return null;
 
   const spotlight: Spotlight = isSelected
     ? "primary"
     : isNeighborSelected || isEdgeSelected
       ? "secondary"
       : "normal";
-
-  useEffect(() => {
-    // hack to avoid animation on first render; for some reason nodes were animating from position 0
-    // to their initial position
-    setAnimated(true);
-  }, []);
 
   const unrestrictedAddingFrom = node.type === "custom" || unrestrictedEditing;
   const addableRelations = addableRelationsFrom(
@@ -137,7 +131,7 @@ export const FlowNode = (flowNode: NodeProps) => {
         {/* always render a handle even if layout did not create a port for the node, because reactflow ports are currently needed in order to create connections */}
         {/* TODO: remove once we make reactflow ports unnecessary for creating connections */}
         {portsAbove.length === 0 && (
-          <NodeHandle id={node.id + "-regularSource"} position={abovePosition} />
+          <NodeHandle id={buildPortId(node.id, "source")} position={abovePosition} />
         )}
         {portsAbove.map((port) => (
           <NodeHandle key={port.id} id={port.id} position={abovePosition} />
@@ -150,7 +144,7 @@ export const FlowNode = (flowNode: NodeProps) => {
           }}
         />
         {portsBelow.length === 0 && (
-          <NodeHandle id={node.id + "-regularTarget"} position={belowPosition} />
+          <NodeHandle id={buildPortId(node.id, "target")} position={belowPosition} />
         )}
         {portsBelow.map((port) => (
           <NodeHandle key={port.id} id={port.id} position={belowPosition} />

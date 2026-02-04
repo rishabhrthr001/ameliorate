@@ -25,7 +25,7 @@ import {
   Widgets,
 } from "@mui/icons-material";
 
-import { FlowNodeType } from "@/web/topic/utils/node";
+import { NodeType } from "@/common/node";
 
 export const indicatorLengthRem = 1.25; // rem
 
@@ -42,7 +42,7 @@ interface NodeDecoration {
  * Could refactor this to nodeIcons, but it seems like more decoration stuff could be useful in the
  * future, so I'm leaving it as nodeDecorations for now.
  */
-export const nodeDecorations: Record<FlowNodeType, NodeDecoration> = {
+export const nodeDecorations: Record<NodeType, NodeDecoration> = {
   // topic
   problem: {
     NodeIcon: Extension,
