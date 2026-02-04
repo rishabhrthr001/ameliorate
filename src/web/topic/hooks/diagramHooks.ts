@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { Diagram, PositionedDiagram } from "@/web/topic/utils/diagram";
+import { Diagram } from "@/web/topic/utils/diagram";
 import { isNode } from "@/web/topic/utils/graph";
-import { layout } from "@/web/topic/utils/layout";
+import { LayoutedGraph, layout } from "@/web/topic/utils/layout";
 import {
   useAvoidEdgeLabelOverlap,
   useForceNodesIntoLayers,
@@ -12,7 +12,7 @@ import {
 } from "@/web/view/currentViewStore/layout";
 
 // re-renders when diagram changes, but only re-layouts if graph parts are added or removed
-export const usePositionedDiagram = (diagram: Diagram) => {
+export const useLayoutedDiagram = (diagram: Diagram) => {
   const forceNodesIntoLayers = useForceNodesIntoLayers();
   const layerNodeIslandsTogether = useLayerNodeIslandsTogether();
   const minimizeEdgeCrossings = useMinimizeEdgeCrossings();
@@ -37,7 +37,7 @@ export const usePositionedDiagram = (diagram: Diagram) => {
     .join();
   const [prevDiagramHash, setPrevDiagramHash] = useState<string | null>(null);
 
-  const [positionedDiagram, setPositionedDiagram] = useState<PositionedDiagram | null>(null);
+  const [layoutedDiagram, setLayoutedDiagram] = useState<LayoutedGraph | null>(null);
   const [hasNewLayout, setHasNewLayout] = useState<boolean>(false);
 
   if (diagramHash !== prevDiagramHash) {
@@ -55,51 +55,14 @@ export const usePositionedDiagram = (diagram: Diagram) => {
         thoroughness,
       );
 
-      const positionedDiagram: PositionedDiagram = {
-        ...diagram,
-        nodes: diagram.nodes
-          .map((node) => {
-            const layoutedNode = newLayoutedDiagram.layoutedNodes.find(
-              (layoutedNode) => layoutedNode.id === node.id,
-            );
-            if (!layoutedNode) return null;
-
-            return {
-              ...node,
-              data: { ...node.data, ports: layoutedNode.ports },
-              position: {
-                x: layoutedNode.x,
-                y: layoutedNode.y,
-              },
-            };
-          })
-          .filter((node) => node !== null),
-        edges: diagram.edges
-          .map((edge) => {
-            const layoutedEdge = newLayoutedDiagram.layoutedEdges.find(
-              (layoutedEdge) => layoutedEdge.id === edge.id,
-            );
-            if (!layoutedEdge) return null;
-            const { sourcePortId, targetPortId, elkLabel, elkSections } = layoutedEdge;
-
-            return {
-              ...edge,
-              sourceHandle: sourcePortId,
-              targetHandle: targetPortId,
-              data: { ...edge.data, elkLabel, elkSections },
-            };
-          })
-          .filter((edge) => edge !== null),
-      };
-
-      setPositionedDiagram(positionedDiagram);
+      setLayoutedDiagram(newLayoutedDiagram);
       setHasNewLayout(true);
     };
     void layoutDiagram();
   }
 
   // if we're waiting for the first layout to complete
-  if (!positionedDiagram) return { positionedDiagram: null, hasNewLayout, setHasNewLayout };
+  if (!layoutedDiagram) return { layoutedDiagram: null, hasNewLayout, setHasNewLayout };
 
-  return { positionedDiagram, hasNewLayout, setHasNewLayout };
+  return { layoutedDiagram, hasNewLayout, setHasNewLayout };
 };

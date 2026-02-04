@@ -2,7 +2,7 @@ import { createDraft, finishDraft } from "immer";
 
 import { RelationName } from "@/common/edge";
 import { errorWithData } from "@/common/errorHandling";
-import { justificationNodeTypes } from "@/common/node";
+import { NodeType, justificationNodeTypes } from "@/common/node";
 import { emitter } from "@/web/common/event";
 import { setNewlyAddedNode } from "@/web/common/store/ephemeralStore";
 import { WorkspaceContextType } from "@/web/topic/components/TopicWorkspace/WorkspaceContext";
@@ -20,12 +20,12 @@ import {
   isNode,
 } from "@/web/topic/utils/graph";
 import { getImplicitLabel } from "@/web/topic/utils/justification";
-import { FlowNodeType, edges } from "@/web/topic/utils/node";
+import { edges } from "@/web/topic/utils/node";
 import { setSelected } from "@/web/view/selectedPartStore";
 
 const createNode = (
   state: DiagramStoreState,
-  toNodeType: FlowNodeType,
+  toNodeType: NodeType,
   arguedDiagramPartId?: string,
   selectNewNode = true,
 ) => {
@@ -142,7 +142,7 @@ export const addNode = ({ fromPartId, directedRelation, context, selectNewNode }
 };
 
 export const addNodeWithoutEdge = (
-  nodeType: FlowNodeType,
+  nodeType: NodeType,
   context: WorkspaceContextType,
   selectNewNode = true,
 ) => {

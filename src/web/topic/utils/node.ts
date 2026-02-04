@@ -3,11 +3,7 @@ import { NodeType, areSameCategoryNodes } from "@/common/node";
 import { componentTypes } from "@/web/topic/utils/edge";
 import { Edge, Graph, Node } from "@/web/topic/utils/graph";
 
-// this is expected to differ from the backend at some point, i.e. if we visualize solutionComponents as nested within solutions
-// this is somewhat premature optimization, but already spent time designing this way so it's probably worth leaving these as distinct
-export type FlowNodeType = NodeType;
-
-export const hideableNodeTypes: FlowNodeType[] = ["criterion", "effect", "solutionComponent"];
+export const hideableNodeTypes: NodeType[] = ["criterion", "effect", "solutionComponent"];
 
 // TODO: memoize? this could traverse a lot of nodes & edges, seems not performant
 export const sourceNodes = (node: Node, topicGraph: Graph, sameCategoryNodes = true) => {

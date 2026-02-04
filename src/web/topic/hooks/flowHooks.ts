@@ -2,11 +2,11 @@ import { type Viewport, useReactFlow, useStore, useStoreApi } from "@xyflow/reac
 import { shallow } from "zustand/shallow";
 
 import { nodeHeightPx, nodeWidthPx } from "@/web/topic/components/Node/EditableNode.styles";
-import { PositionedNode } from "@/web/topic/utils/diagram";
+import { ReactFlowNode } from "@/web/topic/utils/flowUtils";
 import { Node } from "@/web/topic/utils/graph";
 
 const getViewportToIncludeNode = (
-  node: PositionedNode,
+  node: ReactFlowNode,
   viewport: Viewport,
   viewportHeight: number,
   viewportWidth: number,
@@ -69,7 +69,7 @@ export const useViewportUpdater = () => {
    * but it still throws a "cannot update a component while rendering a different component" error,
    * so we're still wrapping it in a convenient method.
    */
-  const fitViewForNodes = (nodes: PositionedNode[], smoothTransition = false) => {
+  const fitViewForNodes = (nodes: ReactFlowNode[], smoothTransition = false) => {
     // defer to avoid "Cannot update a component while rendering a different component" error e.g. when called during Diagram render, so that react flow's Background component doesn't try to re-render during that Diagram render
     setTimeout(
       () => void fitView({ nodes, minZoom, maxZoom: 1, duration: smoothTransition ? 1300 : 0 }),
@@ -77,7 +77,7 @@ export const useViewportUpdater = () => {
     );
   };
 
-  const moveViewportToIncludeNode = (node: PositionedNode) => {
+  const moveViewportToIncludeNode = (node: ReactFlowNode) => {
     // This is intentionally not-reactive. Using a hook that fires whenever the viewport changes is very slow.
     const viewport = getViewport();
     const newViewport = getViewportToIncludeNode(node, viewport, viewportHeight, viewportWidth);

@@ -1,34 +1,11 @@
 import { Stack } from "@mui/material";
-import { Position } from "@xyflow/react";
 
-import { EdgeProps } from "@/web/topic/components/Diagram/Diagram";
 import { ScoreEdge } from "@/web/topic/components/Edge/ScoreEdge";
 import { EditableNode } from "@/web/topic/components/Node/EditableNode";
 import { nodeWidthPx } from "@/web/topic/components/Node/EditableNode.styles";
 import { useNode } from "@/web/topic/diagramStore/nodeHooks";
+import { EdgeLayoutData } from "@/web/topic/utils/diagram";
 import { Edge } from "@/web/topic/utils/graph";
-import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
-
-const convertToStandaloneFlowEdge = (edge: Edge, selected: boolean): EdgeProps => {
-  return {
-    id: edge.id,
-    // don't provide a position for the label, so it defaults to being placed between the two nodes
-    // also we don't need source/target port ids because these are only used within react flow
-    data: { ...edge.data, elkSections: [] },
-    label: edge.label,
-    selected: selected,
-    type: "FlowEdge",
-    source: edge.source,
-    target: edge.target,
-
-    sourceX: nodeWidthPx / 2, // center of node
-    sourceY: 100,
-    sourcePosition: Position.Top, // match layout's upward orientation, so source handles will be on top of nodes
-    targetX: nodeWidthPx / 2,
-    targetY: 0,
-    targetPosition: Position.Bottom,
-  };
-};
 
 interface Props {
   edge: Edge;
@@ -37,20 +14,24 @@ interface Props {
 export const StandaloneEdge = ({ edge }: Props) => {
   const sourceNode = useNode(edge.source);
   const targetNode = useNode(edge.target);
-  const isEdgeSelected = useIsGraphPartSelected(edge.id);
 
   if (!sourceNode || !targetNode) {
     return <p>Could not find edge data!</p>;
   }
 
-  const flowEdge = convertToStandaloneFlowEdge(edge, isEdgeSelected);
+  const edgeLayoutData: EdgeLayoutData = {
+    sourcePoint: { x: nodeWidthPx / 2, y: 100 }, // center of node
+    targetPoint: { x: nodeWidthPx / 2, y: 0 },
+    bendPoints: [],
+    labelPosition: undefined,
+  };
 
   // TODO?: could consider flipping the edge if layout will flip it, but doesn't seem totally necessary
   return (
     <Stack>
       {/* z-index to ensure hanging node indicators don't fall behind the edge svg empty background */}
       <EditableNode node={targetNode} className="z-10" />
-      <ScoreEdge inReactFlow={false} {...flowEdge} />
+      <ScoreEdge edge={edge} edgeLayoutData={edgeLayoutData} inReactFlow={false} />
       <EditableNode node={sourceNode} className="z-10" />
     </Stack>
   );

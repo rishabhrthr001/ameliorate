@@ -2,8 +2,6 @@ import {
   Background,
   BackgroundVariant,
   ConnectionMode,
-  type EdgeProps as DefaultEdgeProps,
-  type NodeProps as DefaultNodeProps,
   OnReconnect as OnReconnectFunc,
   ReactFlowProvider,
   useReactFlow,
@@ -22,66 +20,73 @@ import { FlowEdge } from "@/web/topic/components/Edge/FlowEdge";
 import { FlowNode } from "@/web/topic/components/Node/FlowNode";
 import { connectNodes, reconnectEdge } from "@/web/topic/diagramStore/createDeleteActions";
 import { useDiagram } from "@/web/topic/diagramStore/store";
-import { usePositionedDiagram } from "@/web/topic/hooks/diagramHooks";
+import { useLayoutedDiagram } from "@/web/topic/hooks/diagramHooks";
 import { PanDirection, panDirections, useViewportUpdater } from "@/web/topic/hooks/flowHooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
-import { Diagram as DiagramData, PositionedEdge, PositionedNode } from "@/web/topic/utils/diagram";
-import { Edge } from "@/web/topic/utils/graph";
+import { Diagram as DiagramData } from "@/web/topic/utils/diagram";
+import {
+  FlowEdgeProps,
+  FlowNodeProps,
+  ReactFlowEdge,
+  ReactFlowNode,
+} from "@/web/topic/utils/flowUtils";
 import { hotkeys } from "@/web/topic/utils/hotkeys";
-import { FlowNodeType } from "@/web/topic/utils/node";
+import { LayoutedEdge, LayoutedNode, parsePortId } from "@/web/topic/utils/layout";
 import { tutorialIsOpen } from "@/web/tutorial/tutorial";
 import { useFlashlightMode } from "@/web/view/actionConfigStore";
 import { setSelected, useSelectedGraphPart } from "@/web/view/selectedPartStore";
 
-const buildNodeComponent = (type: FlowNodeType) => {
-  // eslint-disable-next-line react/display-name -- react flow dynamically creates these components without name anyway
-  return (props: NodeProps) => {
-    return <FlowNode {...props} type={type} />;
-  };
+const nodeTypes: Record<"FlowNode", ComponentType<FlowNodeProps>> = { FlowNode: FlowNode };
+const edgeTypes: Record<"FlowEdge", ComponentType<FlowEdgeProps>> = { FlowEdge: FlowEdge };
+
+const convertToReactFlowNodes = (
+  layoutedNodes: LayoutedNode[],
+  selectedGraphPartId?: string,
+): ReactFlowNode[] => {
+  return layoutedNodes.map((node) => ({
+    id: node.id,
+    /**
+     * This is awkward to overwrite our own node types (e.g. problem/benefits/etc.), but react flow
+     * doesn't need to know about these types - its types are used for mapping to react components,
+     * and all of our node types use the same FlowNode component.
+     * In the future we may use different components, but they very likely wouldn't be 1-1 with our
+     * types - e.g. for FlowEdge we might use an IndirectEdge type.
+     */
+    type: "FlowNode" as const,
+    position: { x: node.x, y: node.y },
+    data: { ports: node.ports },
+    selected: node.id === selectedGraphPartId,
+  }));
 };
 
-// this can be generated via `nodeDecorations` but hard to do without the complexity making it hard to follow, so leaving this hardcoded
-const nodeTypes: Record<FlowNodeType, ComponentType<NodeProps>> = {
-  // topic
-  problem: buildNodeComponent("problem"),
-  cause: buildNodeComponent("cause"),
-  solution: buildNodeComponent("solution"),
-  solutionComponent: buildNodeComponent("solutionComponent"),
-  criterion: buildNodeComponent("criterion"),
-  effect: buildNodeComponent("effect"),
-  benefit: buildNodeComponent("benefit"),
-  detriment: buildNodeComponent("detriment"),
-  obstacle: buildNodeComponent("obstacle"),
-  mitigation: buildNodeComponent("mitigation"),
-  mitigationComponent: buildNodeComponent("mitigationComponent"),
-
-  // research
-  question: buildNodeComponent("question"),
-  answer: buildNodeComponent("answer"),
-  fact: buildNodeComponent("fact"),
-  source: buildNodeComponent("source"),
-
-  // justification
-  rootClaim: buildNodeComponent("rootClaim"),
-  support: buildNodeComponent("support"),
-  critique: buildNodeComponent("critique"),
-
-  // generic
-  custom: buildNodeComponent("custom"),
+const convertToReactFlowEdges = (
+  layoutedEdges: LayoutedEdge[],
+  selectedGraphPartId: string | undefined,
+): ReactFlowEdge[] => {
+  return layoutedEdges.map((edge) => ({
+    id: edge.id,
+    // layouted edges don't have source/target nodes because they use ports directly... could add them but it seems not worth
+    source: parsePortId(edge.sourcePortId).nodeId,
+    target: parsePortId(edge.targetPortId).nodeId,
+    /**
+     * This is awkward to overwrite our own edge types (e.g. causes/has/etc.), but react flow
+     * doesn't need to know about these types - its types are used for mapping to react components,
+     * and all of our edge types use the same FlowEdge component.
+     * In the future we may use different components, but they very likely wouldn't be 1-1 with our
+     * types - e.g. for FlowEdge we might use an IndirectEdge type.
+     */
+    type: "FlowEdge" as const,
+    sourceHandle: edge.sourcePortId,
+    targetHandle: edge.targetPortId,
+    data: {
+      sourcePoint: edge.sourcePoint,
+      targetPoint: edge.targetPoint,
+      bendPoints: edge.bendPoints,
+      labelPosition: edge.labelPosition,
+    },
+    selected: edge.id === selectedGraphPartId,
+  }));
 };
-
-const edgeTypes: Record<"FlowEdge", ComponentType<EdgeProps>> = { FlowEdge: FlowEdge };
-
-// react-flow passes exactly DefaultNodeProps but data can be customized
-// not sure why, but DefaultNodeProps has xPos and yPos instead of Node's position.x and position.y
-export interface NodeProps extends DefaultNodeProps {
-  data: PositionedNode["data"];
-}
-
-export interface EdgeProps extends DefaultEdgeProps {
-  data: PositionedEdge["data"];
-  type: Edge["type"]; // for some reason after reactflow 11->12, DefaultEdgeProps has optional type, but ReactFlow component expects it to be defined
-}
 
 const onReconnect: OnReconnectFunc = (oldEdge, newConnection) => {
   reconnectEdge(oldEdge, newConnection.source, newConnection.target);
@@ -95,9 +100,9 @@ const DiagramWithoutProvider = (diagram: DiagramData) => {
   const userCanEditTopicData = useUserCanEditTopicData(sessionUser?.username);
   const { fitViewForNodes, moveViewportToIncludeNode, pan, zoomIn, zoomOut } = useViewportUpdater();
   const { viewportInitialized, getNodes, getNodesBounds } = useReactFlow();
-  const { positionedDiagram, hasNewLayout, setHasNewLayout } = usePositionedDiagram(diagram);
+  const { layoutedDiagram, hasNewLayout, setHasNewLayout } = useLayoutedDiagram(diagram);
 
-  const selectedGraphPart = useSelectedGraphPart();
+  const selectedGraphPartId = useSelectedGraphPart()?.id;
   const flashlightMode = useFlashlightMode();
   const partIdToCentralize = usePartIdToCentralize();
 
@@ -135,36 +140,52 @@ const DiagramWithoutProvider = (diagram: DiagramData) => {
     setFlowMethods(getNodes, getNodesBounds);
   }, [getNodes, getNodesBounds]);
 
-  // centralize part via `useEffect` because `viewBasics` event can directly cause `TopicPane` re-render, which throws a React error if it happens during the `Diagram` render
-  useEffect(() => {
-    if (!partIdToCentralize || !positionedDiagram || !viewportInitialized) return;
+  if (!layoutedDiagram) return <Loading />;
 
-    const nodeToCentralize = positionedDiagram.nodes.find((node) => node.id === partIdToCentralize);
-    const edgeToCentralize = positionedDiagram.edges.find((edge) => edge.id === partIdToCentralize);
-    const partIsDisplayed = nodeToCentralize ?? edgeToCentralize;
+  const { layoutedNodes, layoutedEdges } = layoutedDiagram;
 
-    if (nodeToCentralize) fitViewForNodes([nodeToCentralize], true);
-    else if (!partIsDisplayed) emitter.emit("viewBasics");
-
-    clearPartIdToCentralize();
-  }, [fitViewForNodes, positionedDiagram, partIdToCentralize, viewportInitialized]);
-
-  if (!positionedDiagram) return <Loading />;
-
-  const { nodes, edges } = positionedDiagram;
+  /**
+   * Generally React Flow should only need layout information, and our own node/edge components can
+   * get other part data that they need for rendering.
+   *
+   * Initial motivation for separating these is that we want our node/edge components to re-render
+   * based on all latest node/edge data, but the React Flow component should only have to re-render
+   * if layout stuff changes.
+   *
+   * Future motivation is that we want our graphing logic to be able to use a minimal node/edge data
+   * structure that isn't affected by frontend-specific preferences (e.g. React Flow's `data` field).
+   *
+   * Note: may need to memoize if performance is an issue? I think React Flow wraps our node/edge
+   * components in a memoized component though, so may not be an issue.
+   */
+  const reactFlowNodes = convertToReactFlowNodes(layoutedNodes, selectedGraphPartId);
+  const reactFlowEdges = convertToReactFlowEdges(layoutedEdges, selectedGraphPartId);
 
   if (newNodeId && hasNewLayout) {
-    const newNode = nodes.find((node) => node.id === newNodeId);
+    const newNode = reactFlowNodes.find((node) => node.id === newNodeId);
     if (newNode) moveViewportToIncludeNode(newNode);
     setNewNodeId(null);
   }
 
   if (topicViewUpdated && hasNewLayout) {
-    fitViewForNodes(nodes, true);
+    fitViewForNodes(reactFlowNodes, true);
     setTopicViewUpdated(false);
   }
 
   if (hasNewLayout) setHasNewLayout(false);
+
+  if (partIdToCentralize && viewportInitialized) {
+    const nodeToCentralize = reactFlowNodes.find((node) => node.id === partIdToCentralize);
+    const edgeToCentralize = reactFlowEdges.find((edge) => edge.id === partIdToCentralize);
+    const partIsDisplayed = nodeToCentralize ?? edgeToCentralize;
+
+    if (nodeToCentralize) fitViewForNodes([nodeToCentralize], true);
+    // timeout to make event async because it can directly cause `TopicPane` re-render, which throws a React error if it happens during the `Diagram` render
+    else if (!partIsDisplayed) setTimeout(() => emitter.emit("viewBasics"));
+
+    // timeout because this will trigger re-render for this component, which throws a React error because we're in the middle of rendering it already
+    setTimeout(() => clearPartIdToCentralize());
+  }
 
   return (
     <>
@@ -208,10 +229,8 @@ const DiagramWithoutProvider = (diagram: DiagramData) => {
           String.raw` [&_.diagram-edge]:transition-[filter] [&_.diagram-edge]:duration-300` +
           String.raw` [&_.react-flow\_\_edge-path]:transition-[filter] [&_.react-flow\_\_edge-path]:duration-300`
         }
-        // add selected here because react flow uses it (as opposed to our custom components, which can rely on selectedGraphPart hook independently)
-        // may need to memoize if performance is an issue? since this will create a different array every Diagram render
-        nodes={nodes.map((node) => ({ ...node, selected: node.id === selectedGraphPart?.id }))}
-        edges={edges.map((edge) => ({ ...edge, selected: edge.id === selectedGraphPart?.id }))}
+        nodes={reactFlowNodes}
+        edges={reactFlowEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
