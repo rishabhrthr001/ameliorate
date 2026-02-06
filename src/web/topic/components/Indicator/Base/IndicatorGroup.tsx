@@ -1,5 +1,6 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useContext } from "react";
 
+import { WorkspaceContext } from "@/web/topic/components/TopicWorkspace/WorkspaceContext";
 import { visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { useWhenToShowIndicators } from "@/web/view/userConfigStore/store";
 
@@ -9,8 +10,14 @@ interface Props {
 }
 
 export const IndicatorGroup = ({ className, children }: Props) => {
+  const workspaceContext = useContext(WorkspaceContext);
+  const inDiagram = workspaceContext === "diagram";
+
   const whenToShowIndicators = useWhenToShowIndicators();
-  const showIndicatorsOnHoverSelect = whenToShowIndicators === "onHoverOrSelect";
+
+  // When we're e.g. in details/summary/table, just always show the enabled indicators, because
+  // there isn't as much worry about overcluttering.
+  const showIndicatorsOnHoverSelect = inDiagram && whenToShowIndicators === "onHoverOrSelect";
 
   return (
     <div

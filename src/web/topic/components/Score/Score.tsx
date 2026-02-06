@@ -77,10 +77,8 @@ export const Score = ({ graphPartId }: ScoreProps) => {
   ) : undefined;
   const isInteractive = hoverCircle !== undefined;
 
-  // Nice to show scores in details view so there's some way for new users to be exposed to them.
   // Always show score on table because the main purpose of the table is to compare scores.
-  const showScore =
-    workspaceContext === "table" || workspaceContext === "details" || enableScoresToShow;
+  const showScore = workspaceContext === "table" || enableScoresToShow;
 
   // TODO: it's really awkward when scores are hidden, we hover the node, select a score, and the
   // score immediately disappears before we can see that our score was actually selected.
