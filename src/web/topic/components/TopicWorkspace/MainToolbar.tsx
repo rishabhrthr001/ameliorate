@@ -1,4 +1,5 @@
 import {
+  AdsClick,
   AlignVerticalCenter,
   ArrowDropDown,
   Build,
@@ -13,6 +14,7 @@ import {
   TabUnselected,
   TableChartOutlined,
   ThumbsUpDown,
+  Visibility,
   WbTwilight,
 } from "@mui/icons-material";
 import {
@@ -57,18 +59,20 @@ import {
 } from "@/web/view/perspectiveStore";
 import { useSelectedGraphPart } from "@/web/view/selectedPartStore";
 import {
-  toggleIndicateWhenNodeForcedToShow,
+  setWhenToShowIndicators,
+  toggleEnableContentIndicators,
+  toggleEnableForceShownIndicators,
+  toggleEnableScoresToShow,
+  toggleEnableViewIndicators,
   toggleQuickScoring,
-  toggleShowContentIndicators,
-  toggleShowScores,
-  toggleShowViewIndicators,
   toggleZenMode,
-  useIndicateWhenNodeForcedToShow,
+  useEnableContentIndicators,
+  useEnableForceShownIndicators,
+  useEnableScoresToShow,
+  useEnableViewIndicators,
   useQuickScoring,
-  useShowContentIndicators,
-  useShowScores,
-  useShowViewIndicators,
-} from "@/web/view/userConfigStore";
+  useWhenToShowIndicators,
+} from "@/web/view/userConfigStore/store";
 
 const aggregationModeIcons: Record<AggregationMode, ReactNode> = {
   average: <AlignVerticalCenter />,
@@ -148,10 +152,11 @@ interface ShowHideMenuProps {
 }
 
 const ShowHideMenu = ({ anchorEl, setAnchorEl }: ShowHideMenuProps) => {
-  const showScores = useShowScores();
-  const showContentIndicators = useShowContentIndicators();
-  const showViewIndicators = useShowViewIndicators();
-  const indicateWhenNodeForcedToShow = useIndicateWhenNodeForcedToShow();
+  const whenToShowIndicators = useWhenToShowIndicators();
+  const enableScoresToShow = useEnableScoresToShow();
+  const enableContentIndicators = useEnableContentIndicators();
+  const enableViewIndicators = useEnableViewIndicators();
+  const enableForceShownIndicators = useEnableForceShownIndicators();
 
   const menuOpen = Boolean(anchorEl);
   if (!menuOpen) return;
@@ -164,51 +169,76 @@ const ShowHideMenu = ({ anchorEl, setAnchorEl }: ShowHideMenuProps) => {
       closeOnClick={false}
       openDirection="top"
     >
-      <MenuItem onClick={() => toggleShowScores()}>
+      <RadioGroup name="when to show indicators">
+        <MenuItem onClick={() => setWhenToShowIndicators("always")}>
+          <ListItemIcon>
+            <Visibility />
+          </ListItemIcon>
+          <ListItemText primary="Always show indicators" />
+          <Radio
+            checked={whenToShowIndicators === "always"}
+            value="always"
+            name="when to show indicators"
+          />
+        </MenuItem>
+        <MenuItem onClick={() => setWhenToShowIndicators("onHoverOrSelect")}>
+          <ListItemIcon>
+            <AdsClick />
+          </ListItemIcon>
+          <ListItemText primary="Show indicators on hover or select" />
+          <Radio
+            checked={whenToShowIndicators === "onHoverOrSelect"}
+            value="onHoverOrSelect"
+            name="when to show indicators"
+          />
+        </MenuItem>
+      </RadioGroup>
+
+      <Divider />
+
+      <MenuItem onClick={() => toggleEnableScoresToShow()}>
         <ListItemIcon>
           <Looks6 />
         </ListItemIcon>
-        {/* "always" to distinguish from "on hover" - ideally we probably use "always"/"on hover"/"never" options to remove ambiguity */}
-        <ListItemText primary="Always show scores" />
+        <ListItemText primary="Enable scores to show" />
         <Switch
-          checked={showScores}
+          checked={enableScoresToShow}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation
           onClick={(e) => e.stopPropagation()}
           className="pointer-events-none"
         />
       </MenuItem>
-      <MenuItem onClick={() => toggleShowContentIndicators()}>
+      <MenuItem onClick={() => toggleEnableContentIndicators()}>
         <ListItemIcon>
           <ThumbsUpDown />
         </ListItemIcon>
-        {/* "always" to distinguish from "on hover" - ideally we probably use "always"/"on hover"/"never" options to remove ambiguity */}
-        <ListItemText primary="Always show content indicators" />
+        <ListItemText primary="Enable content indicators" />
         <Switch
-          checked={showContentIndicators}
+          checked={enableContentIndicators}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation
           onClick={(e) => e.stopPropagation()}
           className="pointer-events-none"
         />
       </MenuItem>
-      <MenuItem onClick={() => toggleShowViewIndicators()}>
+      <MenuItem onClick={() => toggleEnableViewIndicators()}>
         <ListItemIcon>
           <TableChartOutlined />
         </ListItemIcon>
-        <ListItemText primary="Show view indicators" />
+        <ListItemText primary="Enable view indicators" />
         <Switch
-          checked={showViewIndicators}
+          checked={enableViewIndicators}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation
           onClick={(e) => e.stopPropagation()}
           className="pointer-events-none"
         />
       </MenuItem>
-      <MenuItem onClick={() => toggleIndicateWhenNodeForcedToShow()}>
+      <MenuItem onClick={() => toggleEnableForceShownIndicators()}>
         <ListItemIcon>
           <WbTwilight />
         </ListItemIcon>
-        <ListItemText primary="Show force shown indicators" />
+        <ListItemText primary="Enable force shown indicators" />
         <Switch
-          checked={indicateWhenNodeForcedToShow}
+          checked={enableForceShownIndicators}
           // for some reason the parent MenuItem click gets doubled if we don't stopPropagation
           onClick={(e) => e.stopPropagation()}
           className="pointer-events-none"

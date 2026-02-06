@@ -28,10 +28,10 @@ export const EdgeCell = ({ edge }: { edge: Edge }) => {
           graphPartId={edge.id}
           bgColor="white"
           notes={edge.data.notes}
-          className="my-0 ml-0"
+          className="my-0 mr-0"
         />
         <ContentIndicatorGroup
-          className="m-0"
+          className="my-0"
           graphPartId={edge.id}
           graphPartType="edge"
           bgColor="white"

@@ -24,7 +24,7 @@ import {
 } from "@/web/topic/diagramStore/graphPartHooks";
 import { GraphPart, isNode } from "@/web/topic/utils/graph";
 import { useShowResolvedComments } from "@/web/view/miscTopicConfigStore";
-import { useExpandDetailsTabs } from "@/web/view/userConfigStore";
+import { useExpandDetailsTabs } from "@/web/view/userConfigStore/store";
 
 export type DetailsTab = "Basics" | "Justification" | "Research" | "Comments";
 

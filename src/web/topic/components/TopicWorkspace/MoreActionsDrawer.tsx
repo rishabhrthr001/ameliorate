@@ -93,7 +93,7 @@ import {
   useExpandDetailsTabs,
   useFillNodeAttachmentWithColor,
   useFillNodesWithColor,
-} from "@/web/view/userConfigStore";
+} from "@/web/view/userConfigStore/store";
 
 const ScreenshotFormSchema = z.object({
   width: z.number().int().positive(),

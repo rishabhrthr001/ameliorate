@@ -41,7 +41,7 @@ import { graphPartClass, interactableClass } from "@/web/topic/utils/styleUtils"
 import { useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { setSummaryNodeId } from "@/web/view/currentViewStore/summary";
 import { setSelected, useIsGraphPartSelected } from "@/web/view/selectedPartStore";
-import { useFillNodesWithColor } from "@/web/view/userConfigStore";
+import { useFillNodesWithColor } from "@/web/view/userConfigStore/store";
 
 const useFloatingToolbar = (nodeRef: HTMLDivElement | null, selected: boolean) => {
   const [isOpenViaFocus, setIsOpenViaFocus] = useState(false);

@@ -17,9 +17,10 @@ import { indicatorLengthRem, nodeDecorations } from "@/web/topic/utils/nodeDecor
 import { visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { showNode } from "@/web/view/currentViewStore/filter";
 import {
+  useEnableContentIndicators,
   useFillNodeAttachmentWithColor,
-  useShowContentIndicators,
-} from "@/web/view/userConfigStore";
+  useWhenToShowIndicators,
+} from "@/web/view/userConfigStore/store";
 
 const NodeSummary = ({ node, beforeSlot }: { node: Node; beforeSlot?: ReactNode }) => {
   const { NodeIcon } = nodeDecorations[node.type];
@@ -68,7 +69,9 @@ interface FocusNodeAttachmentProps {
 }
 
 export const FocusNodeAttachment = ({ node, position, className }: FocusNodeAttachmentProps) => {
-  const showContentIndicators = useShowContentIndicators();
+  const whenToShowIndicators = useWhenToShowIndicators();
+  const showIndicatorsOnHoverSelect = whenToShowIndicators === "onHoverOrSelect";
+  const enableContentIndicators = useEnableContentIndicators();
 
   const neighbors = useNeighbors(node.id);
   const fillNodeAttachmentWithColor = useFillNodeAttachmentWithColor();
@@ -83,7 +86,7 @@ export const FocusNodeAttachment = ({ node, position, className }: FocusNodeAtta
   // but used on every node's attachment render).
   const hiddenNeighbors = useHiddenNodes(neighbors);
 
-  if (hiddenNeighbors.length === 0) return null;
+  if (!enableContentIndicators || hiddenNeighbors.length === 0) return null;
 
   const sortedHiddenNeighbors: Node[] = hiddenNeighbors.toSorted((a, b) => {
     const diff = nodeTypes.indexOf(a.type) - nodeTypes.indexOf(b.type);
@@ -158,7 +161,7 @@ export const FocusNodeAttachment = ({ node, position, className }: FocusNodeAtta
     <div
       className={
         `pointer-events-auto absolute flex flex-col items-center ${className}` +
-        (showContentIndicators ? "" : ` invisible ${visibleOnPartHoverSelectedClasses}`)
+        (showIndicatorsOnHoverSelect ? ` invisible ${visibleOnPartHoverSelectedClasses}` : "")
       }
     >
       {position === Position.Top || position === Position.Left ? (

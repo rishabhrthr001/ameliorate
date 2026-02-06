@@ -1,5 +1,5 @@
 import { Indicator, IndicatorProps } from "@/web/topic/components/Indicator/Base/Indicator";
-import { useShowViewIndicators } from "@/web/view/userConfigStore";
+import { useEnableViewIndicators } from "@/web/view/userConfigStore/store";
 
 export const ViewIndicator = ({
   Icon,
@@ -8,18 +8,11 @@ export const ViewIndicator = ({
   bgColor,
   filled = true,
 }: Omit<IndicatorProps, "className">) => {
-  const showViewIndicators = useShowViewIndicators();
+  const enableViewIndicators = useEnableViewIndicators();
 
-  const showIndicator = showViewIndicators;
+  if (!enableViewIndicators) return;
 
   return (
-    <Indicator
-      Icon={Icon}
-      title={title}
-      onClick={onClick}
-      bgColor={bgColor}
-      filled={filled}
-      className={showIndicator ? "" : "hidden"}
-    />
+    <Indicator Icon={Icon} title={title} onClick={onClick} bgColor={bgColor} filled={filled} />
   );
 };
