@@ -24,7 +24,7 @@ import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { addableRelationsFrom } from "@/web/topic/utils/edge";
 import { FlowNodeProps } from "@/web/topic/utils/flowUtils";
 import { buildPortId, opposite, orientation, positions } from "@/web/topic/utils/layout";
-import { interactableClass, visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
+import { visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { getFlashlightMode, useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { showNodeAndNeighbors } from "@/web/view/currentViewStore/filter";
 import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
@@ -125,7 +125,7 @@ export const FlowNode = (flowNode: FlowNodeProps) => {
         <FocusNodeAttachment
           node={node}
           position={focusNodeAttachmentPosition}
-          className={focusNodeAttachmentPositionClasses + ` ${interactableClass}`}
+          className={focusNodeAttachmentPositionClasses}
         />
 
         {/* always render a handle even if layout did not create a port for the node, because reactflow ports are currently needed in order to create connections */}
