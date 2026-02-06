@@ -20,6 +20,7 @@ import { useIsNodeSelected } from "@/web/topic/diagramStore/edgeHooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { EdgeLayoutData } from "@/web/topic/utils/diagram";
 import { Edge } from "@/web/topic/utils/graph";
+import { graphPartClass } from "@/web/topic/utils/styleUtils";
 import { useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { useAvoidEdgeLabelOverlap } from "@/web/view/currentViewStore/layout";
 import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
@@ -138,7 +139,7 @@ export const ScoreEdge = ({ edge, edgeLayoutData, inReactFlow }: Props) => {
         (spotlight === "normal" ? " border-none" : "") +
         // allow other components to apply conditional css related to this edge, e.g. when it's hovered/selected
         // separate from react-flow__edge because sometimes edges are rendered outside of react-flow (e.g. details pane), and we still want to style these
-        " diagram-edge" +
+        ` diagram-edge ${graphPartClass}` +
         (isEdgeSelected ? " selected" : "")
       }
     >

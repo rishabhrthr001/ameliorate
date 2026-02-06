@@ -2,11 +2,7 @@ import { useContext } from "react";
 
 import { Indicator, IndicatorProps } from "@/web/topic/components/Indicator/Base/Indicator";
 import { WorkspaceContext } from "@/web/topic/components/TopicWorkspace/WorkspaceContext";
-import {
-  interactableClass,
-  visibleOnEdgeHoverSelectedClasses,
-  visibleOnNodeHoverSelectedClasses,
-} from "@/web/topic/utils/styleUtils";
+import { interactableClass, visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { useShowContentIndicators } from "@/web/view/userConfigStore";
 
 export const ContentIndicator = ({
@@ -31,10 +27,7 @@ export const ContentIndicator = ({
       bgColor={bgColor}
       filled={filled}
       className={
-        interactableClass +
-        (alwaysShow
-          ? ""
-          : ` invisible ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`)
+        interactableClass + (alwaysShow ? "" : ` invisible ${visibleOnPartHoverSelectedClasses}`)
       }
     />
   );

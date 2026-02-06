@@ -14,7 +14,7 @@ import { useNeighbors } from "@/web/topic/diagramStore/nodeHooks";
 import { useHiddenNodes } from "@/web/topic/hooks/flowHooks";
 import { Node } from "@/web/topic/utils/graph";
 import { indicatorLengthRem, nodeDecorations } from "@/web/topic/utils/nodeDecoration";
-import { visibleOnNodeHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
+import { visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { showNode } from "@/web/view/currentViewStore/filter";
 import {
   useFillNodeAttachmentWithColor,
@@ -158,7 +158,7 @@ export const FocusNodeAttachment = ({ node, position, className }: FocusNodeAtta
     <div
       className={
         `pointer-events-auto absolute flex flex-col items-center ${className}` +
-        (showContentIndicators ? "" : ` invisible ${visibleOnNodeHoverSelectedClasses}`)
+        (showContentIndicators ? "" : ` invisible ${visibleOnPartHoverSelectedClasses}`)
       }
     >
       {position === Position.Top || position === Position.Left ? (

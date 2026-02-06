@@ -16,11 +16,7 @@ import { useFlowZoom } from "@/web/topic/hooks/flowHooks";
 import { useOnPlayground } from "@/web/topic/topicStore/store";
 import { hotkeys } from "@/web/topic/utils/hotkeys";
 import { userCanEditScores } from "@/web/topic/utils/score";
-import {
-  interactableClass,
-  visibleOnEdgeHoverSelectedClasses,
-  visibleOnNodeHoverSelectedClasses,
-} from "@/web/topic/utils/styleUtils";
+import { interactableClass, visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { useReadonlyMode } from "@/web/view/actionConfigStore";
 import { useAggregationMode, usePerspectives } from "@/web/view/perspectiveStore";
 import { useQuickScoring, useShowScores } from "@/web/view/userConfigStore";
@@ -90,9 +86,7 @@ export const Score = ({ graphPartId }: ScoreProps) => {
   // score immediately disappears before we can see that our score was actually selected.
   // How can we make this not awkward...? Potentially we could `setTimeout` after scoring so that
   // it shows for a second or two and then fades?
-  const showScoreClasses = showScore
-    ? ""
-    : ` invisible ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`;
+  const showScoreClasses = showScore ? "" : ` invisible ${visibleOnPartHoverSelectedClasses}`;
 
   if (!isInteractive) {
     return (

@@ -13,10 +13,18 @@
  * they need to be children of the node container element.
  */
 export const interactableClass = "interactable";
+export const graphPartClass = "graphPart";
 
 // keep these next to `interactableClass` because tailwind doesn't let us reference the `interactableClass` variable and we need to hardcode the class as a string
-// `String.raw` in order to allow underscores to be escaped for tailwind, so they don't get converted to spaces
 // `:not(:has(:not(&).interactable:hover))` is so that we don't show this element if we're hovering another interactable element
 // TODO: seems like the `not().interactable` part isn't working?
-export const visibleOnNodeHoverSelectedClasses = String.raw` [.react-flow\_\_node:not(:has(:not(&).interactable:hover)):hover_&]:visible [.react-flow\_\_node:has(.diagram-node.selected)_&]:visible`;
-export const visibleOnEdgeHoverSelectedClasses = String.raw` [.diagram-edge:not(:has(:not(&).interactable:hover)):hover_&]:visible [.diagram-edge.selected_&]:visible`;
+/**
+ * Convenient selector for showing elements when hovering/selecting the parent graph part.
+ *
+ * `String.raw` in order to allow underscores to be escaped for tailwind, so they don't get converted to spaces
+ *
+ * Considered separating a variable for selecting based on `react-flow__node` and not `graphPart`, but this
+ * caused elements to have different hover timings e.g. node attachment would show when hovering the
+ * hover bridge content indicators would only show when hovering the inner `EditableNode`.
+ */
+export const visibleOnPartHoverSelectedClasses = String.raw` [:is(.react-flow\_\_node,.graphPart):not(:has(:not(&).interactable:hover)):hover_&]:visible in-[.react-flow\_\_node:has(.graphPart.selected),.graphPart.selected]:visible`;

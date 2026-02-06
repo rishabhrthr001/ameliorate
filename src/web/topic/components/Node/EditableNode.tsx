@@ -37,7 +37,7 @@ import { setCustomNodeType } from "@/web/topic/diagramStore/actions";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { Node } from "@/web/topic/utils/graph";
 import { nodeDecorations } from "@/web/topic/utils/nodeDecoration";
-import { interactableClass } from "@/web/topic/utils/styleUtils";
+import { graphPartClass, interactableClass } from "@/web/topic/utils/styleUtils";
 import { useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { setSummaryNodeId } from "@/web/view/currentViewStore/summary";
 import { setSelected, useIsGraphPartSelected } from "@/web/view/selectedPartStore";
@@ -162,7 +162,7 @@ const EditableNodeBase = ({ node, className = "", onClick }: Props) => {
           className +
           // allow other components to apply conditional css related to this node, e.g. when it's hovered/selected
           // separate from react-flow__node because sometimes nodes are rendered outside of react-flow (e.g. details pane), and we still want to style these
-          " diagram-node" +
+          ` diagram-node ${graphPartClass}` +
           " relative p-0 flex flex-col rounded-md border-2" +
           // avoid inheriting pointer-events because flow node will wrap in a motion.div that ignores pointer events
           " pointer-events-auto" +

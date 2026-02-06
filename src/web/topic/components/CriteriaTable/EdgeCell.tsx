@@ -3,6 +3,7 @@ import { CommonIndicatorGroup } from "@/web/topic/components/Indicator/Base/Comm
 import { ContentIndicatorGroup } from "@/web/topic/components/Indicator/Base/ContentIndicatorGroup";
 import { StatusIndicatorGroup } from "@/web/topic/components/Indicator/Base/StatusIndicatorGroup";
 import { Edge } from "@/web/topic/utils/graph";
+import { graphPartClass } from "@/web/topic/utils/styleUtils";
 import { setSelected, useIsGraphPartSelected } from "@/web/view/selectedPartStore";
 
 export const EdgeCell = ({ edge }: { edge: Edge }) => {
@@ -11,7 +12,9 @@ export const EdgeCell = ({ edge }: { edge: Edge }) => {
   return (
     <div
       className={
-        "flex h-full flex-col items-center justify-center" +
+        graphPartClass +
+        (selected ? " selected" : "") +
+        " flex h-full flex-col items-center justify-center" +
         // bg-neutral-50 instead of bg-neutral-main because we specifically want to contrast with indicator backgrounds
         ` hover:bg-neutral-50${selected ? " bg-neutral-50" : ""}`
       }

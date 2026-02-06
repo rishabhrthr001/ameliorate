@@ -24,7 +24,7 @@ import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { addableRelationsFrom } from "@/web/topic/utils/edge";
 import { FlowNodeProps } from "@/web/topic/utils/flowUtils";
 import { buildPortId, opposite, orientation, positions } from "@/web/topic/utils/layout";
-import { interactableClass, visibleOnNodeHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
+import { interactableClass, visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { getFlashlightMode, useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { showNodeAndNeighbors } from "@/web/view/currentViewStore/filter";
 import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
@@ -159,7 +159,7 @@ export const FlowNode = (flowNode: FlowNodeProps) => {
           title="Add node"
           openDirection={addButtonPosition === Position.Top ? "top" : "bottom"}
           // use visibility so that buttons stay in DOM and their tooltips don't throw an "`anchorEl` prop invalid" error when they're hidden
-          className={`invisible absolute ${visibleOnNodeHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
+          className={`invisible absolute ${visibleOnPartHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
         />
       )}
     </>

@@ -3,7 +3,7 @@ import { memo } from "react";
 
 import { useSessionUser } from "@/web/common/hooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
-import { visibleOnNodeHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
+import { visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 
 interface Props {
   id: string;
@@ -40,7 +40,7 @@ const NodeHandleBase = ({ id, position }: Props) => {
         " invisible" +
         // if editing, show handles on-hover/-select so that we can create edges
         (userCanEditTopicData
-          ? ` ${visibleIfConnectingClassName} ${visibleOnNodeHoverSelectedClasses}`
+          ? ` ${visibleIfConnectingClassName} ${visibleOnPartHoverSelectedClasses}`
           : "")
       }
     />
