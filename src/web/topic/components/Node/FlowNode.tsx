@@ -158,7 +158,8 @@ export const FlowNode = (flowNode: FlowNodeProps) => {
           addableRelations={addableRelations}
           title="Add node"
           openDirection={addButtonPosition === Position.Top ? "top" : "bottom"}
-          className={`absolute hidden ${visibleOnNodeHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
+          // use visibility so that buttons stay in DOM and their tooltips don't throw an "`anchorEl` prop invalid" error when they're hidden
+          className={`invisible absolute ${visibleOnNodeHoverSelectedClasses} ${addButtonPositionClasses} ${addButtonDecorationClasses}`}
         />
       )}
     </>

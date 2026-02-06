@@ -18,7 +18,7 @@ const NodeHandleBase = ({ id, position }: Props) => {
   // Could use reactflow's `useConnection` for this to be simpler logic, but that triggers thousands
   // of selector checks because it checks on _every_ mouse move. Doesn't seem worth that since we
   // can do it this way.
-  const showIfConnectingClassName =
+  const visibleIfConnectingClassName =
     position === Position.Top
       ? String.raw` [.react-flow\_\_nodes:has(.connectingfrom.react-flow\_\_handle-bottom)_&]:visible`
       : position === Position.Bottom
@@ -26,9 +26,6 @@ const NodeHandleBase = ({ id, position }: Props) => {
         : position === Position.Left
           ? String.raw` [.react-flow\_\_nodes:has(.connectingfrom.react-flow\_\_handle-right)_&]:visible`
           : String.raw` [.react-flow\_\_nodes:has(.connectingfrom.react-flow\_\_handle-left)_&]:visible`;
-
-  // if editing, show handles on-hover/-select so that we can create edges
-  const showOnHoverSelectClassName = userCanEditTopicData ? visibleOnNodeHoverSelectedClasses : "";
 
   return (
     <Handle
@@ -40,9 +37,11 @@ const NodeHandleBase = ({ id, position }: Props) => {
         // z-index to show in front of EditableNode, which is otherwise in the same stacking context (since it's set to relative positioning now)
         "size-2.5 z-10" +
         // rely on `visibility` rather than `display` so that invisible handles can still render for react-flow's connection drawing
-        " hidden" +
-        ` ${showIfConnectingClassName}` +
-        ` ${showOnHoverSelectClassName}`
+        " invisible" +
+        // if editing, show handles on-hover/-select so that we can create edges
+        (userCanEditTopicData
+          ? ` ${visibleIfConnectingClassName} ${visibleOnNodeHoverSelectedClasses}`
+          : "")
       }
     />
   );

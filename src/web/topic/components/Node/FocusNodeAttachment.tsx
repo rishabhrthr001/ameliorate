@@ -158,7 +158,7 @@ export const FocusNodeAttachment = ({ node, position, className }: FocusNodeAtta
     <div
       className={
         `pointer-events-auto absolute flex flex-col items-center ${className}` +
-        (showContentIndicators ? "" : ` hidden ${visibleOnNodeHoverSelectedClasses}`)
+        (showContentIndicators ? "" : ` invisible ${visibleOnNodeHoverSelectedClasses}`)
       }
     >
       {position === Position.Top || position === Position.Left ? (

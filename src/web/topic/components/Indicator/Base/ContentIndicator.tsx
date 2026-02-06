@@ -34,7 +34,7 @@ export const ContentIndicator = ({
         interactableClass +
         (alwaysShow
           ? ""
-          : ` hidden ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`)
+          : ` invisible ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`)
       }
     />
   );

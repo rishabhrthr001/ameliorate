@@ -92,7 +92,7 @@ export const Score = ({ graphPartId }: ScoreProps) => {
   // it shows for a second or two and then fades?
   const showScoreClasses = showScore
     ? ""
-    : ` hidden ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`;
+    : ` invisible ${visibleOnNodeHoverSelectedClasses} ${visibleOnEdgeHoverSelectedClasses}`;
 
   if (!isInteractive) {
     return (

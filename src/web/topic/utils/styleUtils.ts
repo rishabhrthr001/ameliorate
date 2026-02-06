@@ -18,5 +18,5 @@ export const interactableClass = "interactable";
 // `String.raw` in order to allow underscores to be escaped for tailwind, so they don't get converted to spaces
 // `:not(:has(:not(&).interactable:hover))` is so that we don't show this element if we're hovering another interactable element
 // TODO: seems like the `not().interactable` part isn't working?
-export const visibleOnNodeHoverSelectedClasses = String.raw` [.react-flow\_\_node:not(:has(:not(&).interactable:hover)):hover_&]:flex [.react-flow\_\_node:has(.diagram-node.selected)_&]:flex`;
-export const visibleOnEdgeHoverSelectedClasses = String.raw` [.diagram-edge:not(:has(:not(&).interactable:hover)):hover_&]:flex [.diagram-edge.selected_&]:flex`;
+export const visibleOnNodeHoverSelectedClasses = String.raw` [.react-flow\_\_node:not(:has(:not(&).interactable:hover)):hover_&]:visible [.react-flow\_\_node:has(.diagram-node.selected)_&]:visible`;
+export const visibleOnEdgeHoverSelectedClasses = String.raw` [.diagram-edge:not(:has(:not(&).interactable:hover)):hover_&]:visible [.diagram-edge.selected_&]:visible`;
