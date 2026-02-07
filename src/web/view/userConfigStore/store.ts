@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { migrate } from "@/web/view/userConfigStore/migrate";
+
+type WhenToShowIndicators = "always" | "onHoverOrSelect";
+
 interface UserConfigStoreState {
   zenMode: boolean;
   fillNodesWithColor: boolean;
@@ -31,16 +35,12 @@ interface UserConfigStoreState {
    */
   quickScoring: boolean;
 
-  /**
-   * Defaulted to false (with content indicators) under the assumption that they'll show on hover or
-   * select.
-   *
-   * TODO?: probably should change these from bools to enums ("show: always" vs "show: on hover or select")
-   */
-  showScores: boolean;
-  showContentIndicators: boolean;
-  showViewIndicators: boolean;
-  indicateWhenNodeForcedToShow: boolean; // legacy name, could rename to `showForceShownIndicators`
+  whenToShowIndicators: WhenToShowIndicators;
+
+  enableScoresToShow: boolean;
+  enableContentIndicators: boolean;
+  enableViewIndicators: boolean;
+  enableForceShownIndicators: boolean;
 }
 
 const initialState: UserConfigStoreState = {
@@ -51,15 +51,18 @@ const initialState: UserConfigStoreState = {
   expandAddNodeButtons: false,
   quickScoring: false,
 
-  showScores: false,
-  showContentIndicators: false,
-  showViewIndicators: false,
-  indicateWhenNodeForcedToShow: false,
+  whenToShowIndicators: "onHoverOrSelect",
+  enableScoresToShow: true,
+  enableContentIndicators: true,
+  enableViewIndicators: false,
+  enableForceShownIndicators: false,
 };
 
 const useUserConfigStore = create<UserConfigStoreState>()(
   persist(() => initialState, {
     name: "user-config-storage",
+    version: 2,
+    migrate: migrate,
   }),
 );
 
@@ -88,20 +91,24 @@ export const useQuickScoring = () => {
   return useUserConfigStore((state) => state.quickScoring);
 };
 
-export const useShowScores = () => {
-  return useUserConfigStore((state) => state.showScores);
+export const useWhenToShowIndicators = () => {
+  return useUserConfigStore((state) => state.whenToShowIndicators);
 };
 
-export const useShowContentIndicators = () => {
-  return useUserConfigStore((state) => state.showContentIndicators);
+export const useEnableScoresToShow = () => {
+  return useUserConfigStore((state) => state.enableScoresToShow);
 };
 
-export const useShowViewIndicators = () => {
-  return useUserConfigStore((state) => state.showViewIndicators);
+export const useEnableContentIndicators = () => {
+  return useUserConfigStore((state) => state.enableContentIndicators);
 };
 
-export const useIndicateWhenNodeForcedToShow = () => {
-  return useUserConfigStore((state) => state.indicateWhenNodeForcedToShow);
+export const useEnableViewIndicators = () => {
+  return useUserConfigStore((state) => state.enableViewIndicators);
+};
+
+export const useEnableForceShownIndicators = () => {
+  return useUserConfigStore((state) => state.enableForceShownIndicators);
 };
 
 // actions
@@ -129,20 +136,26 @@ export const toggleQuickScoring = () => {
   useUserConfigStore.setState((state) => ({ quickScoring: !state.quickScoring }));
 };
 
-export const toggleShowScores = () => {
-  useUserConfigStore.setState((state) => ({ showScores: !state.showScores }));
+export const setWhenToShowIndicators = (whenToShowIndicators: WhenToShowIndicators) => {
+  useUserConfigStore.setState({ whenToShowIndicators });
 };
 
-export const toggleShowContentIndicators = () => {
-  useUserConfigStore.setState((state) => ({ showContentIndicators: !state.showContentIndicators }));
+export const toggleEnableScoresToShow = () => {
+  useUserConfigStore.setState((state) => ({ enableScoresToShow: !state.enableScoresToShow }));
 };
 
-export const toggleShowViewIndicators = () => {
-  useUserConfigStore.setState((state) => ({ showViewIndicators: !state.showViewIndicators }));
-};
-
-export const toggleIndicateWhenNodeForcedToShow = () => {
+export const toggleEnableContentIndicators = () => {
   useUserConfigStore.setState((state) => ({
-    indicateWhenNodeForcedToShow: !state.indicateWhenNodeForcedToShow,
+    enableContentIndicators: !state.enableContentIndicators,
+  }));
+};
+
+export const toggleEnableViewIndicators = () => {
+  useUserConfigStore.setState((state) => ({ enableViewIndicators: !state.enableViewIndicators }));
+};
+
+export const toggleEnableForceShownIndicators = () => {
+  useUserConfigStore.setState((state) => ({
+    enableForceShownIndicators: !state.enableForceShownIndicators,
   }));
 };

@@ -24,7 +24,7 @@ import {
   getDirectedRelationDescription,
 } from "@/web/topic/utils/edge";
 import { Node } from "@/web/topic/utils/graph";
-import { useExpandAddNodeButtons } from "@/web/view/userConfigStore";
+import { useExpandAddNodeButtons } from "@/web/view/userConfigStore/store";
 
 const getOptionText = (node: Node) => {
   const title = prettyNodeTypes[node.type];

@@ -167,6 +167,7 @@ export default defineConfig(
             "^spotlight-.*",
             "^diagram-node$",
             "^diagram-edge$",
+            "^graphPart$",
           ],
         },
       ],

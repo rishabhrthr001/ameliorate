@@ -20,10 +20,12 @@ import { useIsNodeSelected } from "@/web/topic/diagramStore/edgeHooks";
 import { useUserCanEditTopicData } from "@/web/topic/topicStore/store";
 import { EdgeLayoutData } from "@/web/topic/utils/diagram";
 import { Edge } from "@/web/topic/utils/graph";
+import { graphPartClass, visibleOnPartHoverSelectedClasses } from "@/web/topic/utils/styleUtils";
 import { useUnrestrictedEditing } from "@/web/view/actionConfigStore";
 import { useAvoidEdgeLabelOverlap } from "@/web/view/currentViewStore/layout";
 import { useIsGraphPartSelected } from "@/web/view/selectedPartStore";
 import { setSelected } from "@/web/view/selectedPartStore";
+import { useWhenToShowIndicators } from "@/web/view/userConfigStore/store";
 
 const flowMarkerId = "flowMarker";
 const nonFlowMarkerId = "nonFlowMarker";
@@ -80,6 +82,8 @@ export const ScoreEdge = ({ edge, edgeLayoutData, inReactFlow }: Props) => {
 
   const unrestrictedEditing = useUnrestrictedEditing();
   const avoidEdgeLabelOverlap = useAvoidEdgeLabelOverlap();
+  const whenToShowIndicators = useWhenToShowIndicators();
+  const showIndicatorsOnHoverSelect = whenToShowIndicators === "onHoverOrSelect";
 
   const isNodeSelected = useIsNodeSelected(edge.id);
   const isEdgeSelected = useIsGraphPartSelected(edge.id);
@@ -138,7 +142,7 @@ export const ScoreEdge = ({ edge, edgeLayoutData, inReactFlow }: Props) => {
         (spotlight === "normal" ? " border-none" : "") +
         // allow other components to apply conditional css related to this edge, e.g. when it's hovered/selected
         // separate from react-flow__edge because sometimes edges are rendered outside of react-flow (e.g. details pane), and we still want to style these
-        " diagram-edge" +
+        ` diagram-edge ${graphPartClass}` +
         (isEdgeSelected ? " selected" : "")
       }
     >
@@ -157,9 +161,23 @@ export const ScoreEdge = ({ edge, edgeLayoutData, inReactFlow }: Props) => {
       >
         {labelText}
       </Typography>
-      {/* only use margin when indicators are showing */}
       <CommonIndicatorGroup graphPart={edge} className="absolute right-0 translate-x-5" />
-      <div className="absolute bottom-0 flex translate-y-5">
+      <div
+        className={
+          "absolute bottom-0 flex translate-y-5" +
+          /**
+           * Ideally we only put this on the respective indicator groups, but when we do that, this
+           * div still takes up space and is hoverable even when indicators are invisible.
+           * Not sure how to avoid that without putting this here (`:empty` doesn't work because the
+           * children _are_ in the DOM, they just have `visibility: hidden`).
+           * Note: EditableNode's hanging indicator div (BottomDiv) is able to take up no space
+           * because the children indicator groups are `absolute`ly positioned. We can't do that
+           * here because edge labels don't have enough space to put the groups in opposite corners,
+           * they have to be next to each other (and not overlap each other).
+           */
+          (showIndicatorsOnHoverSelect ? ` invisible ${visibleOnPartHoverSelectedClasses}` : "")
+        }
+      >
         <StatusIndicatorGroup graphPartId={edge.id} bgColor="white" notes={edge.data.notes} />
         <ContentIndicatorGroup
           graphPartId={edge.id}

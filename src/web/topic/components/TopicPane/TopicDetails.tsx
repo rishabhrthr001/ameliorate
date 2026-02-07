@@ -33,7 +33,7 @@ import {
   useUserIsCreator,
 } from "@/web/topic/topicStore/store";
 import { useShowResolvedComments } from "@/web/view/miscTopicConfigStore";
-import { useExpandDetailsTabs } from "@/web/view/userConfigStore";
+import { useExpandDetailsTabs } from "@/web/view/userConfigStore/store";
 
 const formSchema = () => {
   return z.object({

@@ -1,6 +1,6 @@
-import { Stack } from "@mui/material";
 import { memo } from "react";
 
+import { IndicatorGroup } from "@/web/topic/components/Indicator/Base/IndicatorGroup";
 import { CommentIndicator } from "@/web/topic/components/Indicator/CommentIndicator";
 import { FoundResearchIndicator } from "@/web/topic/components/Indicator/FoundResearchIndicator";
 import { JustificationIndicator } from "@/web/topic/components/Indicator/JustificationIndicator";
@@ -16,12 +16,12 @@ interface Props {
 
 const ContentIndicatorGroupBase = ({ graphPartId, graphPartType, bgColor, className }: Props) => {
   return (
-    <Stack direction="row" margin="2px" spacing="2px" className={className}>
+    <IndicatorGroup className={className}>
       <JustificationIndicator graphPartId={graphPartId} bgColor={bgColor} />
       <QuestionIndicator graphPartId={graphPartId} bgColor={bgColor} />
       <FoundResearchIndicator graphPartId={graphPartId} bgColor={bgColor} />
       <CommentIndicator graphPartId={graphPartId} graphPartType={graphPartType} bgColor={bgColor} />
-    </Stack>
+    </IndicatorGroup>
   );
 };
 

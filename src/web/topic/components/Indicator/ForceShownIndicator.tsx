@@ -3,6 +3,7 @@ import { MouseEventHandler, memo, useCallback } from "react";
 
 import { Indicator } from "@/web/topic/components/Indicator/Base/Indicator";
 import { stopForcingNodeToShow, useIsNodeForcedToShow } from "@/web/view/currentViewStore/filter";
+import { useEnableForceShownIndicators } from "@/web/view/userConfigStore/store";
 
 interface Props {
   nodeId: string;
@@ -11,6 +12,8 @@ interface Props {
 
 // TODO: only show if we're a FlowNode
 const ForceShownIndicatorBase = ({ nodeId, bgColor }: Props) => {
+  const enableForceShownIndicators = useEnableForceShownIndicators();
+
   const nodeIsForcedToShow = useIsNodeForcedToShow(nodeId);
 
   const onClick: MouseEventHandler<HTMLButtonElement> = useCallback(
@@ -18,7 +21,7 @@ const ForceShownIndicatorBase = ({ nodeId, bgColor }: Props) => {
     [nodeId],
   );
 
-  if (!nodeIsForcedToShow) return <></>;
+  if (!enableForceShownIndicators || !nodeIsForcedToShow) return <></>;
 
   return (
     <Indicator
