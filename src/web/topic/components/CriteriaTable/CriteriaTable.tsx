@@ -279,6 +279,13 @@ export const CriteriaTable = () => {
       <MaterialReactTable
         columns={columnData}
         data={rowData}
+        // Disabled because they annoyingly override cause arrow key behavior within Node Cell
+        // textboxes, making the next cell over become focused rather than moving the input's
+        // cursor.
+        // Probably ideally we'd keep these enabled and maybe stop propagation? Or have the focus-
+        // next-cell actually result in making our next cell `selected` as well. But for now, we
+        // don't really use these shortcuts much anyway, so we're just disabling them.
+        enableKeyboardShortcuts={false}
         enableColumnActions={false}
         enablePagination={false}
         enableBottomToolbar={false}
