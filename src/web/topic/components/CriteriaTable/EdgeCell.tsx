@@ -15,8 +15,11 @@ export const EdgeCell = ({ edge }: { edge: Edge }) => {
         graphPartClass +
         (selected ? " selected" : "") +
         " flex h-full flex-col items-center justify-center" +
-        // bg-neutral-50 instead of bg-neutral-main because we specifically want to contrast with indicator backgrounds
-        ` hover:bg-neutral-50${selected ? " bg-neutral-50" : ""}`
+        // `rounded-md` so that rings match a node's rounding
+        " rounded-md" +
+        // ensure it's obvious when a cell is selected/hovered
+        " hover:inset-ring-2 hover:inset-ring-info-main/30" +
+        " [&.selected]:inset-ring-2 [&.selected]:inset-ring-info-main"
       }
       onClick={() => setSelected(edge.id)}
       onContextMenu={(event) => openContextMenu(event, { edge })}
