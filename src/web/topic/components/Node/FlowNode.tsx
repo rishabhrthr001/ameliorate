@@ -1,5 +1,5 @@
 import { Global } from "@emotion/react";
-import { Position } from "@xyflow/react";
+import { Position, useUpdateNodeInternals } from "@xyflow/react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
@@ -34,6 +34,7 @@ export const FlowNode = (flowNode: FlowNodeProps) => {
 
   const { sessionUser } = useSessionUser();
   const userCanEditTopicData = useUserCanEditTopicData(sessionUser?.username);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const node = useNode(flowNode.id);
   const isSelected = useIsGraphPartSelected(flowNode.id);
@@ -121,6 +122,19 @@ export const FlowNode = (flowNode: FlowNodeProps) => {
         key={node.id.concat(animated.toString())}
         layout={animated}
         style={{ pointerEvents: "none" }}
+        onLayoutAnimationComplete={() => {
+          /**
+           * This ensures node measurements are accurate after animation.
+           *
+           * Normally ReactFlow measures node placement immediately after flow render, but `motion`
+           * will animate position over a few moments, causing initial node measurement to be
+           * incorrect, and new connections will be drawn from old handle positions.
+           *
+           * Note: if performance of this is significant, we can just move the handles outside of
+           * the `motion.div`, since they don't _really_ need to animate.
+           */
+          updateNodeInternals(node.id);
+        }}
       >
         <FocusNodeAttachment
           node={node}
