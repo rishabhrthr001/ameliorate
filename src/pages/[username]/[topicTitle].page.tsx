@@ -4,7 +4,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { NotFoundError, QueryError } from "@/web/common/components/Error/Error";
+import { QueryError } from "@/web/common/components/Error/Error";
+import { TopicAccessError } from "@/web/common/components/Error/TopicAccessError";
 import { Loading } from "@/web/common/components/Loading/Loading";
 import { useSessionUser } from "@/web/common/hooks";
 import { trpc } from "@/web/common/trpc";
@@ -75,7 +76,16 @@ const Topic: NextPage = () => {
     return <Loading />;
 
   if (getDiagram.error) return <QueryError error={getDiagram.error} />;
-  if (!getDiagram.data) return <NotFoundError />;
+  if (!getDiagram.data) {
+    return (
+      <>
+        <Head>
+          <title>Topic not found | Ameliorate</title>
+        </Head>
+        <TopicAccessError showLogin={!sessionUser} />
+      </>
+    );
+  }
 
   // Separate this from the above loading check so that errors show on failed query
   if (!populatedFromApi) return <Loading />;
