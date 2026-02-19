@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { Select } from "@/web/common/components/Form/Select";
+import { ColoredNodeIcon } from "@/web/topic/components/ColoredNodeIcon";
 import { Node } from "@/web/topic/utils/graph";
 
 interface Props {
@@ -22,7 +23,11 @@ export const NodeSelect = ({
 
   const options = useMemo(() => {
     return nodeOptions.map((node) => {
-      return { id: node.id, label: node.data.label };
+      return {
+        id: node.id,
+        label: node.data.label,
+        beforeSlot: <ColoredNodeIcon type={node.type} className="mr-2 rounded-sm p-0.5" />,
+      };
     });
   }, [nodeOptions]);
 
