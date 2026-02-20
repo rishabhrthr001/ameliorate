@@ -43,3 +43,7 @@
   tailwind.config.js.
 */
 @config '../../../tailwind.config.js';
+
+body:has(#workspace) #site-header {
+  display: none;
+}
