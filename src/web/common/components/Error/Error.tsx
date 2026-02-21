@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { ReactNode } from "react";
 
 import { Link } from "@/web/common/components/Link";
+import { useSessionUser } from "@/web/common/hooks";
 
 const logWarning = (message: string, statusCode: number) => {
   Sentry.setTag("statusCode", statusCode);
@@ -27,6 +28,9 @@ export const AppError = ({
   message?: ReactNode;
   children?: ReactNode;
 }) => {
+  const { sessionUser } = useSessionUser();
+  const isLoggedIn = sessionUser != null;
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-24 text-center">
       <Typography variant="h4" component="h1" fontWeight="bold">
@@ -38,9 +42,16 @@ export const AppError = ({
 
       <div className="mt-4 flex justify-center gap-4">
         {children ?? (
-          <Button component={Link} href="/" variant="contained">
-            Go Home
-          </Button>
+          <>
+            <Button component={Link} href="/" variant="contained">
+              Go Home
+            </Button>
+            {!isLoggedIn && (
+              <Button component={Link} href="/api/auth/login" variant="outlined">
+                Login
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -67,15 +78,11 @@ export const NotLoggedInError = () => {
   return <AppError statusCode={401} title="You must be logged in to view this page" />;
 };
 
-export const TopicAccessError = () => {
+export const TopicNotFoundError = () => {
   return (
     <AppError
       title="Topic not found"
       message="Either this topic doesn’t exist, or you don’t have permission to view it."
-    >
-      <Button component={Link} href="/" variant="contained">
-        Go Home
-      </Button>
-    </AppError>
+    />
   );
 };

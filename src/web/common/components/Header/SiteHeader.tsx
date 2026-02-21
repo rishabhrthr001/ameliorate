@@ -25,9 +25,8 @@ export const SiteHeader = () => {
 
   return (
     <AppBar
-      id="site-header"
       position="sticky"
-      className="overflow-x-auto border-b bg-paperShaded-main shadow-none"
+      className="overflow-x-auto border-b bg-paperShaded-main shadow-none [body:has(#workspace)_&]:hidden"
     >
       {/* banner within app bar so that it matches stickiness of the toolbar */}
       <SiteBanner />
